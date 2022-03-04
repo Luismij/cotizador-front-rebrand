@@ -36,9 +36,8 @@ const Customers = ({ history }) => {
           }
         }
         const res = await axios.request(options)
-        const aux = res.data.map(customer => ({ ...customer, key: customer._id }))
-        setCustomers(aux)
-        setAllCustomers(aux)
+        setCustomers(res.data)
+        setAllCustomers(res.data)
         setLoading(false)
       } catch (error) {
         console.error(error);

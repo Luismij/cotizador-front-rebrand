@@ -25,42 +25,42 @@ Object.filter = (obj, predicate) =>
     .filter(key => predicate(obj[key]))// eslint-disable-next-line
     .reduce((res, key) => (res[key] = obj[key], res), {});
 
-const EditCustomer = ({ history, match }) => {
-  const [customer, setCustomer] = useState(null)
+const EditUser = ({ history, match }) => {
+  const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
-  const customerId = match.params.customerid
 
   useEffect(() => {
     const init = async () => {
+      const jwtToken = localStorage.getItem('jwt')
       try {
-        const jwt = localStorage.getItem('jwt')
-        const options = {
-          url: API_BASE_URL + '/customer/' + customerId,
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'jwt-token': jwt
+        if (jwtToken) {
+          const options = {
+            method: 'GET',
+            url: API_BASE_URL + "/user/loginjwt",
+            headers: { 'jwt-token': jwtToken }
           }
+          const res = await axios.request(options)
+          setUser(res.data)
+        } else {
+          setUser(null)
         }
-        let res = await axios.request(options)
-        setCustomer(res.data)
-        setLoading(false)
       } catch (error) {
         console.log(error);
+        localStorage.removeItem('jwt')
       }
+      setLoading(false)
     }
     init()
-  }, [customerId])
+  }, [])
 
 
   const onFinish = async (form) => {
     setLoading(true)
     let data = Object.filter(form, item => item !== undefined)
-    data._id = customerId
     const jwt = localStorage.getItem('jwt')
     try {
       const options = {
-        url: API_BASE_URL + '/customer/',
+        url: API_BASE_URL + '/user/',
         method: 'PUT',
         data,
         headers: {
@@ -69,9 +69,9 @@ const EditCustomer = ({ history, match }) => {
         }
       }
       await axios.request(options)
-      message.success({ content: 'Cliente editado con exito' })
+      message.success({ content: 'Usuario editado con exito' })
       setLoading(false)
-      history.push(APP_PREFIX_PATH + '/customers')
+      history.push(APP_PREFIX_PATH + '/users')
     } catch (error) {
       setLoading(false)
       console.error(error);
@@ -84,7 +84,7 @@ const EditCustomer = ({ history, match }) => {
 
   return (
     <Card>
-      <Form {...layout} name="add-customer" onFinish={onFinish} validateMessages={validateMessages} initialValues={{ ...customer }}>
+      <Form {...layout} name="add-user" onFinish={onFinish} validateMessages={validateMessages} initialValues={{ ...user }}>
         <Form.Item name={['name']} label="Nombre" rules={[{ required: true }]}>
           <Input />
         </Form.Item>
@@ -95,9 +95,6 @@ const EditCustomer = ({ history, match }) => {
           <InputNumber style={{ width: '200px' }} />
         </Form.Item>
         <Form.Item name={['webAddress']} label="Direccion web" >
-          <Input />
-        </Form.Item>
-        <Form.Item name={['logo']} label="URL Logo" >
           <Input />
         </Form.Item>
         <Form.Item name={['address']} label="Direccion" >
@@ -113,7 +110,7 @@ const EditCustomer = ({ history, match }) => {
           <Button type="primary" htmlType="submit">
             Editar
           </Button>
-          <Button type="ghost" onClick={() => history.push(APP_PREFIX_PATH + '/customers')} style={{ marginLeft: '15px' }}>
+          <Button type="ghost" onClick={() => history.push(APP_PREFIX_PATH + '/users')} style={{ marginLeft: '15px' }}>
             Volver
           </Button>
         </Form.Item>
@@ -122,4 +119,4 @@ const EditCustomer = ({ history, match }) => {
   )
 }
 
-export default EditCustomer
+export default EditUser

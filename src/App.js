@@ -37,7 +37,7 @@ function App() {
         }
       } catch (error) {
         console.log(error);
-        //localStorage.removeItem('jwt')
+        localStorage.removeItem('jwt')
       }
     }
     init()

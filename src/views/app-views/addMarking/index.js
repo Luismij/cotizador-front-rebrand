@@ -27,21 +27,16 @@ Object.filter = (obj, predicate) =>
     .reduce((res, key) => (res[key] = obj[key], res), {});
 
 const AddMarking = ({ history }) => {
-  const [markingName, setMarkingName] = useState('')
-  const [ranges, setRanges] = useState([{ min: 0, max: 1, inks: [{ name: '', price: 0 }] }])
+  const [marking, setMarking] = useState({ name: '', inks: [{ minTotalPrice: '', outOfRangePrice: '', ranges: [{ min: '', max: '', price: '' }] }] })
 
   const onFinish = async (form) => {
     const jwt = localStorage.getItem('jwt')
 
-    const data = {
-      name: markingName,
-      ranges
-    }
     try {
       const options = {
         url: API_BASE_URL + '/marking/',
         method: 'POST',
-        data,
+        data: marking,
         headers: {
           'Content-Type': 'application/json',
           'jwt-token': jwt
@@ -55,78 +50,96 @@ const AddMarking = ({ history }) => {
     }
   }
 
-  const addRange = () => setRanges([...ranges, { min: 0, max: 1, inks: [{ name: '', price: 0 }] }])
-  const addInk = (i) => {
-    let aux = [...ranges]
-    aux[i].inks.push({ name: '', price: 0 })
-    setRanges(aux)
+  const addInk = () => {
+    let aux = { ...marking }
+    aux.inks.push({ minTotalPrice: 0, outOfRangePrice: 0, ranges: [{ min: 0, max: 0, price: 0 }] })
+    setMarking(aux)
+  }
+  const addRange = (i) => {
+    let aux = { ...marking }
+    aux.inks[i].ranges.push({ min: 0, max: 0, price: 0 })
+    setMarking(aux)
   }
 
-  const onChangeRange = (v, i) => {
-    let aux = [...ranges]
-    aux[i][v.target.name] = v.target.value
-    setRanges(aux)
+  const onChangeInk = (v, i) => {
+    const num = Number(v.target.value);
+    if ((Number.isInteger(num) && num > 0) || v.target.value === '') {
+      let aux = { ...marking }
+      aux.inks[i][v.target.name] = v.target.value
+      setMarking(aux)
+    }
   }
 
-  const onChangeInk = (v, i, j) => {
-    let aux = [...ranges]
-    aux[i].inks[j][v.target.name] = v.target.value
-    setRanges(aux)
+  const deleteInk = (i) => {
+    let aux = { ...marking }
+    aux.inks.splice(i, 1)
+    setMarking(aux)
   }
 
-  const deleteRange = (i) => {
-    let aux = [...ranges]
-    aux.splice(i, 1)
-    setRanges(aux)
+  const onChangeRange = (v, i, j) => {
+    const num = Number(v.target.value);
+    if ((Number.isInteger(num) && num > 0) || v.target.value === '') {
+      let aux = { ...marking }
+      aux.inks[i].ranges[j][v.target.name] = v.target.value
+      setMarking(aux)
+    }
   }
 
-  const deleteInk = (i, j) => {
-    let aux = [...ranges]
-    aux[i].inks.splice(j, 1)
-    setRanges(aux)
+  const deleteRange = (i, j) => {
+    let aux = { ...marking }
+    aux.inks[i].ranges.splice(j, 1)
+    setMarking(aux)
   }
 
   return (
     <Card title='Crear marcación'>
       <Form {...layout} name="add-marking" onFinish={onFinish} validateMessages={validateMessages}>
         <Form.Item label="Nombre" rules={[{ required: true }]}>
-          <Input value={markingName} onChange={(v) => setMarkingName(v.target.value)} />
+          <Input value={marking.name} onChange={(v) => setMarking({ ...marking, name: v.target.value })} />
         </Form.Item>
-        {ranges.map((range, i) => (
-          <Card title={`Rango de unidades ${i + 1}`} key={`${i}`}>
+        {marking.inks.map((ink, i) => (
+          <Card title={`Tinta ${i + 1}`} key={i}>
             <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-around' }}>
-                <Form.Item label="Min" rules={[{ required: true }]}>
-                  <Input type='number' value={range.min} name='min' placeholder='min' onChange={(v) => onChangeRange(v, i)} />
-                </Form.Item>
-                <Form.Item label="Max" rules={[{ required: true }]}>
-                  <Input type='number' value={range.max} name='max' placeholder='max' onChange={(v) => onChangeRange(v, i)} />
-                </Form.Item>
+                <div style={{ display: 'flex', flexDirection: 'row', width: '280px', alignItems: 'center' }}>
+                  <p style={{ marginBottom: '0px', marginRight: '10px', fontWeight: '900' }}>Precio minimo:</p>
+                  <Input value={ink.minTotalPrice} name='minTotalPrice' placeholder='Precio minimo' onChange={(v) => onChangeInk(v, i)} style={{ width: '150px' }} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'row', width: '280px', alignItems: 'center' }}>
+                  <p style={{ marginBottom: '0px', marginRight: '10px', fontWeight: '900' }}>Precio unitario fuera de rango:</p>
+                  <Input value={ink.outOfRangePrice} name='outOfRangePrice' placeholder='Precio unitario fuera de rango' onChange={(v) => onChangeInk(v, i)} />
+                </div>
               </div>
-              <Button style={{ backgroundColor: '#ff7575' }} onClick={() => deleteRange(i)}>
+              <Button style={{ backgroundColor: '#ff7575' }} onClick={() => deleteInk(i)}>
                 <DeleteFilled style={{ color: 'white', fontSize: '20px' }} />
               </Button>
             </div>
             <div>
-              {range.inks.map((ink, j) => (
-                <Card title={`Tinta ${j + 1}`} key={`${i}-${j}`}>
-                  <div style={{ display: 'flex', flexDirection: 'row' }}>
-                    <Form.Item style={{ width: '500px' }} label="Nombre" rules={[{ required: true }]}>
-                      <Input value={ink.name} name='name' placeholder='Nombre' onChange={(v) => onChangeInk(v, i, j)} />
-                    </Form.Item>
-                    <Form.Item style={{ width: '300px' }} label="Precio" rules={[{ required: true }]}>
-                      <Input type='number' value={ink.price} name='price' placeholder='Precio' onChange={(v) => onChangeInk(v, i, j)} />
-                    </Form.Item>
+              {ink.ranges.map((range, j) => (
+                <Card title={`Rango ${j + 1}`} key={`${i}-${j}`}>
+                  <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-around' }}>
+                    <div style={{ display: 'flex', flexDirection: 'row', width: '280px', alignItems: 'center' }}>
+                      <p style={{ marginBottom: '0px', marginRight: '10px', fontWeight: '900' }}>Desde:</p>
+                      <Input value={range.min} name='min' placeholder='Desde' onChange={(v) => onChangeRange(v, i, j)} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'row', width: '280px', alignItems: 'center' }}>
+                      <p style={{ marginBottom: '0px', marginRight: '10px', fontWeight: '900' }}>Hasta:</p>
+                      <Input value={range.max} name='max' placeholder='Hasta' onChange={(v) => onChangeRange(v, i, j)} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'row', width: '280px', alignItems: 'center' }}>
+                      <p style={{ marginBottom: '0px', marginRight: '10px', fontWeight: '900' }}>Precio unitario:</p>
+                      <Input value={range.price} name='price' placeholder='Hasta' onChange={(v) => onChangeRange(v, i, j)} />
+                    </div>
                   </div>
-                  <Button style={{ backgroundColor: '#ff7575' }} onClick={() => deleteInk(i, j)}>
+                  <Button style={{ backgroundColor: '#ff7575', marginTop: '20px' }} onClick={() => deleteRange(i, j)}>
                     <DeleteFilled style={{ color: 'white', fontSize: '20px' }} />
                   </Button>
                 </Card>
               ))
               }
               <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', marginBottom: '15px' }}>
-                <Button onClick={() => addInk(i)} style={{ fontSize: '25px', fontWeight: '900', height: '60px' }}>
-                  Agregar Tinta
+                <Button onClick={() => addRange(i)} style={{ fontSize: '25px', fontWeight: '900', height: '60px' }}>
+                  Agregar Rango
                 </Button>
               </div>
             </div>
@@ -134,8 +147,8 @@ const AddMarking = ({ history }) => {
         ))
         }
         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', marginBottom: '15px' }}>
-          <Button onClick={addRange} style={{ fontSize: '25px', fontWeight: '900', height: '60px' }}>
-            Agregar rango
+          <Button onClick={addInk} style={{ fontSize: '25px', fontWeight: '900', height: '60px' }}>
+            Agregar Tinta
           </Button>
         </div>
         <Form.Item >

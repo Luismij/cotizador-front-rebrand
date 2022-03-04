@@ -20,6 +20,7 @@ export const AppViews = () => {
   return (
     <Suspense fallback={<Loading cover="content" />}>
       <Switch>
+        <Route path={`${APP_PREFIX_PATH}/edituser`} component={lazy(() => import(`./editUser`))} />
         <Route path={`${APP_PREFIX_PATH}/customers`} component={lazy(() => import(`./customers`))} />
         <Route path={`${APP_PREFIX_PATH}/addcustomer`} component={lazy(() => import(`./addCustomer`))} />
         <Route path={`${APP_PREFIX_PATH}/editcustomer/:customerid`} component={lazy(() => import(`./editCustomer`))} />

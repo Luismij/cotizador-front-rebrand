@@ -6,9 +6,9 @@ import {
   ShopOutlined,
   QuestionCircleOutlined,
   LogoutOutlined,
-  UserSwitchOutlined
+  UserSwitchOutlined,
+  UserOutlined
 } from '@ant-design/icons';
-import { UserOutlined } from '@ant-design/icons';
 import { useHistory } from "react-router-dom";
 import { UserContext } from "contexts/UserContext";
 import { APP_PREFIX_PATH, AUTH_PREFIX_PATH } from 'configs/AppConfig'
@@ -58,13 +58,19 @@ export const NavProfile = () => {
       </div>
       <div className="nav-profile-body">
         <Menu>
-          <Menu.Item key={menuItem.length} onClick={() => history.push(APP_PREFIX_PATH + '/changepassword')}>
+          <Menu.Item key={menuItem.length} onClick={() => history.push(APP_PREFIX_PATH + '/edituser')}>
+            <span>
+              <UserOutlined className="mr-3" />
+              <span className="font-weight-normal">Edit User</span>
+            </span>
+          </Menu.Item>
+          <Menu.Item key={menuItem.length+1} onClick={() => history.push(APP_PREFIX_PATH + '/changepassword')}>
             <span>
               <UserSwitchOutlined className="mr-3" />
               <span className="font-weight-normal">Change Password</span>
             </span>
           </Menu.Item>
-          <Menu.Item key={menuItem.length + 1} onClick={signOut}>
+          <Menu.Item key={menuItem.length + 2} onClick={signOut}>
             <span>
               <LogoutOutlined className="mr-3" />
               <span className="font-weight-normal">Sign Out</span>

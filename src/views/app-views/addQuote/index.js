@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Select, Card, Form, Button, Input, Modal, Descriptions } from 'antd';
+import { Select, Card, Form, Button, Input, Modal, Divider } from 'antd';
 import { DeleteFilled } from '@ant-design/icons';
 import { APP_PREFIX_PATH, API_BASE_URL } from 'configs/AppConfig'
 import Loading from 'components/shared-components/Loading'
@@ -43,7 +43,7 @@ const AddQuote = ({ history }) => {
   const [customers, setCustomers] = useState([])
   const [products, setProducts] = useState([])
   const [markings, setMarkings] = useState([])
-  const [productsToQuote, setProductsToQuote] = useState([{ product: null, amount: 1, marking: null, range: null, ink: null, inkIndex: 0, subtotal: 0, observations: '' }])
+  const [productsToQuote, setProductsToQuote] = useState([{ product: null, amount: 1, markings: [], subtotal: 0, observations: '' }])
 
   useEffect(() => {
     const CancelToken = axios.CancelToken.source();
@@ -100,7 +100,7 @@ const AddQuote = ({ history }) => {
     return () => CancelToken.cancel('Cancelling in cleanup')
   }, [])
 
-  const addProduct = () => setProductsToQuote([...productsToQuote, { product: null, amount: 1, marking: null, range: null, ink: null, inkIndex: 0, subtotal: 0, observations: '' }])
+  const addProduct = () => setProductsToQuote([...productsToQuote, { product: null, amount: 1, markings: [], subtotal: 0, observations: '' }])
 
   const deleteProduct = (i) => {
     let aux = [...productsToQuote]
@@ -111,38 +111,6 @@ const AddQuote = ({ history }) => {
   const onChangeProduct = (j, i) => {
     let aux = [...productsToQuote]
     aux[i].product = products[j]
-    let sum = 0
-    if (aux[i].product && aux[i].product.price > 0) sum += (aux[i].product.price * aux[i].amount)
-    if (aux[i].ink && aux[i].ink.price > 0) sum += (aux[i].ink.price * aux[i].amount)
-    if (sum > 0) aux[i].subtotal = sum
-    setProductsToQuote(aux)
-  }
-
-  const onChangeMarking = (j, i) => {
-    let aux = [...productsToQuote]
-    aux[i].marking = markings[j]
-    setProductsToQuote(aux)
-  }
-
-  const onChangeRange = (j, i) => {
-    let aux = [...productsToQuote]
-    aux[i].range = aux[i].marking.ranges[j]
-    if (aux[i].range.inks[aux[i].inkIndex]) aux[i].ink = aux[i].range.inks[aux[i].inkIndex]
-    let sum = 0
-    if (aux[i].product && aux[i].product.price > 0) sum += (aux[i].product.price * aux[i].amount)
-    if (aux[i].ink && aux[i].ink.price > 0) sum += (aux[i].ink.price * aux[i].amount)
-    if (sum > 0) aux[i].subtotal = sum
-    setProductsToQuote(aux)
-  }
-
-  const onChangeInk = (j, i) => {
-    let aux = [...productsToQuote]
-    aux[i].ink = aux[i].range.inks[j]
-    aux[i].inkIndex = j
-    let sum = 0
-    if (aux[i].product && aux[i].product.price > 0) sum += (aux[i].product.price * aux[i].amount)
-    if (aux[i].ink && aux[i].ink.price > 0) sum += (aux[i].ink.price * aux[i].amount)
-    if (sum > 0) aux[i].subtotal = sum
     setProductsToQuote(aux)
   }
 
@@ -151,12 +119,56 @@ const AddQuote = ({ history }) => {
     if (v.target.name === 'subtotal' && v.target.value < 0) return
     let aux = [...productsToQuote]
     if (v.target.name === 'amount') {
+      const amount = v.target.value
       let sum = 0
-      if (aux[i].product && aux[i].product.price > 0) sum = (aux[i].product.price * v.target.value)
-      if (aux[i].ink && aux[i].ink.price > 0) sum += (aux[i].ink.price * v.target.value)
+      if (aux[i].product && aux[i].product.price > 0) sum = (aux[i].product.price * amount)
+      for (const mark of aux[i].markings) {
+        if (mark.ink) {
+          let inRange = false
+          for (const ran of mark.ink.ranges) {
+            if (amount < ran.min) {
+              sum += mark.ink.minTotalPrice
+              inRange = true
+              break
+            }
+            if (amount >= ran.min && amount <= ran.max) {
+              sum += amount * ran.price
+              inRange = true
+              break
+            }
+          }
+          if (!inRange) {
+            sum += mark.ink.outOfRangePrice * amount
+          }
+        }
+      }
       if (sum > 0) aux[i].subtotal = sum
     }
     aux[i][v.target.name] = v.target.value
+    setProductsToQuote(aux)
+  }
+
+  const addMarking = (i) => {
+    let aux = [...productsToQuote]
+    aux[i].markings.push({ name: null, i: null, ink: null })
+    setProductsToQuote(aux)
+  }
+
+  const onChangeMarking = (i, j, k) => {
+    let aux = [...productsToQuote]
+    aux[i].markings[j] = { name: markings[k].name, i: k, ink: null }
+    setProductsToQuote(aux)
+  }
+
+  const onChangeInk = (i, j, k) => {
+    let aux = [...productsToQuote]
+    aux[i].markings[j].ink = markings[aux[i].markings[j].i].inks[k]
+    setProductsToQuote(aux)
+  }
+
+  const deleteMarking = (i, j) => {
+    let aux = [...productsToQuote]
+    aux[i].markings.splice(j, 1)
     setProductsToQuote(aux)
   }
 
@@ -181,114 +193,116 @@ const AddQuote = ({ history }) => {
               }
             >
               {customers.map(p => (
-                <Option value={p.id} key={p.id}>{p.name}</Option>
+                <Option value={p._id} key={p._id}>{p.name}</Option>
               ))}
             </Select>
           </Form.Item>
           {productsToQuote.map((product, i) => (
             <Card key={i}>
-              {product.product &&
-                <Card>
-                  <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <Card style={{ marginRight: '20px' }}>
-                      <img src={`https://catalogospromocionales.com/${product.product.photo}`} style={{ objectFit: 'contain', width: '200px' }} alt={product.product.description} />
-                    </Card>
-                    <Descriptions title='Informacion del producto' bordered>
-                      <Descriptions.Item label='Descripcion'>{product.product.description}</Descriptions.Item>
-                      <Descriptions.Item style={{ minWidth: '120px' }} label='Price'>{product.product.price}</Descriptions.Item>
-                      <Descriptions.Item label='SKU'>{product.product.sku}</Descriptions.Item>
-                    </Descriptions>
-                  </div>
-                </Card>
-              }
               <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', flexWrap: 'wrap' }}>
-                  <Form.Item style={{ marginRight: '15px' }} label='Producto' rules={[{ required: true }]}>
-                    <Select
-                      showSearch
-                      style={{ width: 200 }}
-                      onChange={(v) => onChangeProduct(v, i)}
-                      placeholder="Selecciona una producto"
-                      optionFilterProp="children"
-                      filterOption={(input, option) =>
-                        option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                      }
-                    >
-                      {products.map((p, j) => (
-                        <Option value={j} key={p.id}>{p.description}</Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                  <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginBottom: '24px' }}>
-                    <Form.Item label='Marcacion' style={{ marginBottom: '0px' }} rules={[{ required: true }]}>
-                      <Select
-                        showSearch
-                        style={{ width: 200 }}
-                        placeholder="Selecciona una marcación"
-                        onChange={(v) => onChangeMarking(v, i)}
-                        optionFilterProp="children"
-                        filterOption={(input, option) =>
-                          option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                        }
-                      >
-                        {markings.map((p, j) => (
-                          <Option value={j} key={p.id}>{p.name}</Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
-                    {product.marking &&
-                      <Select
-                        showSearch
-                        style={{ width: 200, marginLeft: '8px' }}
-                        placeholder="Selecciona un rango"
-                        onChange={(j) => onChangeRange(j, i)}
-                        optionFilterProp="children"
-                        filterOption={(input, option) =>
-                          option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                        }
-                      >
-                        {product.marking.ranges.map((r, j) => (
-                          <Option value={j} key={r.id}>{`${r.min} - ${r.max}`}</Option>
-                        ))}
-                      </Select>
+                <Form.Item style={{ marginRight: '15px' }} label='Producto' rules={[{ required: true }]}>
+                  <Select
+                    showSearch
+                    style={{ width: 200 }}
+                    onChange={(v) => onChangeProduct(v, i)}
+                    placeholder="Selecciona una producto"
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                     }
-                    {product.range &&
-                      <Select
-                        showSearch
-                        style={{ width: 200, marginLeft: '8px' }}
-                        placeholder="Selecciona una tinta"
-                        onChange={(j) => onChangeInk(j, i)}
-                        optionFilterProp="children"
-                        filterOption={(input, option) =>
-                          option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                        }
-                      >
-                        {product.range.inks.map((r, j) => (
-                          <Option value={j} key={r.id}>{`${r.name}`}</Option>
-                        ))}
-                      </Select>
-                    }
-                    {product.ink &&
-                      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                        <h5 style={{ marginRight: '5px', marginBottom: '0px', marginLeft: '10px' }}>Precio por unidad:</h5>
-                        <p style={{ marginRight: '5px', marginBottom: '0px' }}>{product.ink.price}</p>
-                      </div>
-                    }
-                  </div>
-                  <Form.Item label="Cantidad" style={{ width: 200, marginRight: '15px' }} rules={[{ required: true }]}>
-                    <Input type='number' name='amount' value={product.amount} placeholder='Cantidad' onChange={(v) => onChangeHandler(v, i)} />
-                  </Form.Item>
-                  <Form.Item label="Subtotal" style={{ width: 200, marginRight: '15px' }} rules={[{ required: true }]}>
-                    <Input type='number' name='subtotal' value={product.subtotal} placeholder='Precio' onChange={(v) => onChangeHandler(v, i)} />
-                  </Form.Item>
-                  <Form.Item label="Observaciones" style={{ width: 200, marginRight: '15px' }} rules={[{ required: true }]}>
-                    <Input.TextArea style={{minWidth:'400px'}} name='observations' value={product.observations} placeholder='Observaciones' onChange={(v) => onChangeHandler(v, i)} />
-                  </Form.Item>
-                </div>
+                  >
+                    {products.map((p, j) => (
+                      <Option value={j} key={`${i}-${p._id}`}>{p.sku}</Option>
+                    ))}
+                  </Select>
+                </Form.Item>
                 <Button style={{ backgroundColor: '#ff7575' }} onClick={() => deleteProduct(i)}>
                   <DeleteFilled style={{ color: 'white', fontSize: '20px' }} />
                 </Button>
               </div>
+              {product.product &&
+                <>
+                  <Card>
+                    <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+                      <Card style={{ marginRight: '20px' }}>
+                        <img src={`https://catalogospromocionales.com/${product.product.photo}`} style={{ objectFit: 'contain', width: '200px' }} alt={product.product.description} />
+                      </Card>
+                      <div style={{ width: '300px', display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ display: 'flex', flexDirection: 'row' }}>
+                          <p style={{ marginRight: '10px', marginBottom: '0px', fontWeight: '900' }}>Descripcion:</p>
+                          <p style={{ marginRight: '10px', marginBottom: '0px', fontWeight: '300' }}>{product.product.description}</p>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'row' }}>
+                          <p style={{ marginRight: '10px', marginBottom: '0px', fontWeight: '900' }}>Precio:</p>
+                          <p style={{ marginRight: '10px', marginBottom: '0px', fontWeight: '300' }}>{product.product.price}</p>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'row' }}>
+                          <p style={{ marginRight: '10px', marginBottom: '0px', fontWeight: '900' }}>SKU:</p>
+                          <p style={{ marginRight: '10px', marginBottom: '0px', fontWeight: '300' }}>{product.product.sku}</p>
+                        </div>
+                        <Form.Item label="Cantidad" style={{ width: 200, marginRight: '15px', marginTop: '20px' }} rules={[{ required: true }]}>
+                          <Input type='number' name='amount' value={product.amount} placeholder='Cantidad' onChange={(v) => onChangeHandler(v, i)} />
+                        </Form.Item>
+                        <Form.Item label="Observaciones" style={{ width: 200, marginRight: '15px' }} rules={[{ required: true }]}>
+                          <Input.TextArea style={{ minWidth: '280px' }} name='observations' value={product.observations} placeholder='Observaciones' onChange={(v) => onChangeHandler(v, i)} />
+                        </Form.Item>
+                      </div>
+                      <div style={{ width: '500px', display: 'flex', flexDirection: 'column' }}>
+                        {product.markings.map((m, j) => (
+                          <div key={`marking ${i}-${j}`}>
+                            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                              <Form.Item label='Marcacion' style={{ marginBottom: '0px' }} rules={[{ required: true }]}>
+                                <Select
+                                  showSearch
+                                  style={{ width: 160 }}
+                                  placeholder="Selecciona una marcación"
+                                  onChange={(k) => onChangeMarking(i, j, k)}
+                                  optionFilterProp="children"
+                                  filterOption={(input, option) =>
+                                    option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                  }
+                                >
+                                  {markings.map((p, k) => (
+                                    <Option value={k} key={`${i}-${j}-${p._id}`}>{p.name}</Option>
+                                  ))}
+                                </Select>
+                              </Form.Item>
+                              {m.name &&
+                                <Form.Item label='Tintas' style={{ marginBottom: '0px' }} rules={[{ required: true }]}>
+                                  <Select
+                                    showSearch
+                                    style={{ width: 160 }}
+                                    placeholder="Tintas"
+                                    onChange={(k) => onChangeInk(i, j, k)}
+                                    optionFilterProp="children"
+                                    filterOption={(input, option) =>
+                                      option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                    }
+                                  >
+                                    {markings[m.i].inks.map((ink, k) => (
+                                      <Option value={k} key={`ink ${i - j - k}`}>{`Tinta ${k + 1}`}</Option>
+                                    ))}
+                                  </Select>
+                                </Form.Item>
+                              }
+                              <Button style={{ backgroundColor: '#ff7575' }} onClick={() => deleteMarking(i, j)}>
+                                <DeleteFilled style={{ color: 'white', fontSize: '20px' }} />
+                              </Button>
+                            </div>
+                            <Divider style={{ margin: '15px' }} />
+                          </div>
+                        ))}
+                        <Button onClick={() => addMarking(i)}>
+                          Agregar Marcación
+                        </Button>
+                      </div>
+                      <Form.Item label="Subtotal" style={{ width: 200, marginRight: '15px' }} rules={[{ required: true }]}>
+                        <Input type='number' name='subtotal' value={product.subtotal} placeholder='Precio' onChange={(v) => onChangeHandler(v, i)} />
+                      </Form.Item>
+                    </div>
+                  </Card>
+                </>
+              }
             </Card>
           ))}
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
@@ -302,8 +316,8 @@ const AddQuote = ({ history }) => {
             </Button>
           </Form.Item>
         </Form>
-      </Card>
-    </div>
+      </Card >
+    </div >
   )
 }
 

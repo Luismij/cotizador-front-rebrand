@@ -81,15 +81,15 @@ const Markings = ({ history }) => {
       sorter: (a, b) => antdTableSorter(a, b, 'name'),
     },
     {
-      title: 'Rangos',
-      dataIndex: 'ranges',
-      key: 'ranges',
+      title: 'Tintas',
+      dataIndex: 'inks',
+      key: 'inks',
       render: (r)=> (<div>{r.length}</div>),
     },
     {
       title: 'Acciones',
-      dataIndex: 'id',
-      key: 'id',
+      dataIndex: '_id',
+      key: '_id',
       render: (id) => Actions(id, deleteMarking, editMarking, selectMarking)
     }
   ]
@@ -119,10 +119,10 @@ const Markings = ({ history }) => {
       <Table
         onRow={(record, rowIndex) => {
           return {
-            onDoubleClick: () => { selectMarking(record.id, rowIndex) }, // click row
+            onDoubleClick: () => { selectMarking(record._id, rowIndex) }, // click row
           };
         }}
-        columns={columns} dataSource={markings} rowKey="id"
+        columns={columns} dataSource={markings} rowKey="_id"
       />
     </div>
   )

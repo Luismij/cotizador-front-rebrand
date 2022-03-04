@@ -30,7 +30,6 @@ const AddCustomer = ({ history }) => {
   const onFinish = async (form) => {
     let data = Object.filter(form, item => item !== undefined)
     const jwt = localStorage.getItem('jwt')
-    console.log(data);
     try {
       const options = {
         url: API_BASE_URL + '/customer/',
@@ -59,6 +58,21 @@ const AddCustomer = ({ history }) => {
           <Input />
         </Form.Item>
         <Form.Item name={['phone']} label="Telefono" >
+          <InputNumber style={{ width: '200px' }} />
+        </Form.Item>
+        <Form.Item name={['webAddress']} label="Direccion web" >
+          <Input />
+        </Form.Item>
+        <Form.Item name={['logo']} label="URL Logo" >
+          <Input />
+        </Form.Item>
+        <Form.Item name={['address']} label="Direccion" >
+          <Input />
+        </Form.Item>
+        <Form.Item name={['businessName']} label="Razon social" >
+          <Input />
+        </Form.Item>
+        <Form.Item name={['nit']} label="NIT" >
           <InputNumber style={{ width: '200px' }} />
         </Form.Item>
         <Form.Item wrapperCol={{ ...layout.wrapperCol, offset: 4 }}>

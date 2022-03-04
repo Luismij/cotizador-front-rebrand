@@ -1,19 +1,18 @@
 import React, { useEffect, useState } from 'react'
 import { Table, Input, Button, Popconfirm, message } from 'antd'
-import { EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons'
+import { EditOutlined, DeleteOutlined } from '@ant-design/icons'
 import { APP_PREFIX_PATH, API_BASE_URL } from 'configs/AppConfig'
 import axios from 'axios'
 import Loading from 'components/shared-components/Loading'
 import searchTextInArray from 'utils/search'
 import antdTableSorter from 'utils/sort'
 
-const Actions = (id, deleteCustomer, editCustomer, selectCustomer) => {
+const Actions = (_id, deleteCustomer, editCustomer) => {
 
   return (
     <div>
-      <EyeOutlined onClick={() => selectCustomer(id)} style={{ fontSize: '25px', marginRight: '15px' }} />
-      <EditOutlined onClick={() => editCustomer(id)} style={{ fontSize: '25px', marginRight: '15px' }} />
-      <Popconfirm title="Sure to delete?" onConfirm={() => deleteCustomer(id)}>
+      <EditOutlined onClick={() => editCustomer(_id)} style={{ fontSize: '25px', marginRight: '15px' }} />
+      <Popconfirm title="Sure to delete?" onConfirm={() => deleteCustomer(_id)}>
         <DeleteOutlined style={{ fontSize: '25px' }} />
       </Popconfirm>
     </div>
@@ -37,7 +36,7 @@ const Customers = ({ history }) => {
           }
         }
         const res = await axios.request(options)
-        const aux = res.data.map(customer => ({ ...customer, key: customer.id }))
+        const aux = res.data.map(customer => ({ ...customer, key: customer._id }))
         setCustomers(aux)
         setAllCustomers(aux)
         setLoading(false)
@@ -51,16 +50,16 @@ const Customers = ({ history }) => {
     } */
   }, [])
 
-  const editCustomer = async (id) => {
-    history.push(APP_PREFIX_PATH + '/editcustomer/' + id)
+  const editCustomer = async (_id) => {
+    history.push(APP_PREFIX_PATH + '/editcustomer/' + _id)
   }
 
-  const deleteCustomer = async (id) => {
-    setCustomers(customers.filter(p => p.id !== id))
+  const deleteCustomer = async (_id) => {
+    setCustomers(customers.filter(p => p._id !== _id))
     try {
       const jwt = localStorage.getItem('jwt')
       const options = {
-        url: API_BASE_URL + '/customer/' + id,
+        url: API_BASE_URL + '/customer/' + _id,
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -94,9 +93,9 @@ const Customers = ({ history }) => {
     },
     {
       title: 'Acciones',
-      dataIndex: 'id',
-      key: 'id',
-      render: (id) => Actions(id, deleteCustomer, editCustomer, selectCustomer)
+      dataIndex: '_id',
+      key: '_id',
+      render: (_id) => Actions(_id, deleteCustomer, editCustomer)
     }
   ]
 
@@ -106,10 +105,6 @@ const Customers = ({ history }) => {
     } else {
       setCustomers(allCustomers)
     }
-  }
-
-  const selectCustomer = (id, index) => {
-    history.push(APP_PREFIX_PATH + '/sessions/' + id)
   }
 
   if (loading) return (
@@ -125,10 +120,10 @@ const Customers = ({ history }) => {
       <Table
         onRow={(record, rowIndex) => {
           return {
-            onDoubleClick: () => { selectCustomer(record.id, rowIndex) }, // click row
+            onDoubleClick: () => { editCustomer(record._id) }, // click row
           };
         }}
-        columns={columns} dataSource={customers} rowKey="id"
+        columns={columns} dataSource={customers} rowKey="_id"
       />
     </div>
   )

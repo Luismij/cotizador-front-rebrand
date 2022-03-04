@@ -43,7 +43,7 @@ const AddQuote = ({ history }) => {
   const [customers, setCustomers] = useState([])
   const [products, setProducts] = useState([])
   const [markings, setMarkings] = useState([])
-  const [productsToQuote, setProductsToQuote] = useState([{ product: null, amount: 1, markings: [], subtotal: 0, observations: '' }])
+  const [productsToQuote, setProductsToQuote] = useState([{ product: null, amount: 1, markings: [], unitPrice: 0, subtotal: 0, observations: '' }])
 
   useEffect(() => {
     const CancelToken = axios.CancelToken.source();
@@ -100,7 +100,7 @@ const AddQuote = ({ history }) => {
     return () => CancelToken.cancel('Cancelling in cleanup')
   }, [])
 
-  const addProduct = () => setProductsToQuote([...productsToQuote, { product: null, amount: 1, markings: [], subtotal: 0, observations: '' }])
+  const addProduct = () => setProductsToQuote([...productsToQuote, { product: null, amount: 1, markings: [], unitPrice: 0, subtotal: 0, observations: '' }])
 
   const deleteProduct = (i) => {
     let aux = [...productsToQuote]
@@ -142,7 +142,10 @@ const AddQuote = ({ history }) => {
           }
         }
       }
-      if (sum > 0) aux[i].subtotal = sum
+      if (sum > 0) {
+        aux[i].subtotal = sum
+        aux[i].unitPrice = sum / amount
+      }
     }
     aux[i][v.target.name] = v.target.value
     setProductsToQuote(aux)
@@ -248,6 +251,9 @@ const AddQuote = ({ history }) => {
                         </Form.Item>
                       </div>
                       <div style={{ width: '500px', display: 'flex', flexDirection: 'column' }}>
+                        {product.markings.length === 0 &&
+                          <p style={{ fontWeight: '900' }}>Sin marcacion</p>
+                        }
                         {product.markings.map((m, j) => (
                           <div key={`marking ${i}-${j}`}>
                             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -296,9 +302,15 @@ const AddQuote = ({ history }) => {
                           Agregar Marcación
                         </Button>
                       </div>
-                      <Form.Item label="Subtotal" style={{ width: 200, marginRight: '15px' }} rules={[{ required: true }]}>
-                        <Input type='number' name='subtotal' value={product.subtotal} placeholder='Precio' onChange={(v) => onChangeHandler(v, i)} />
-                      </Form.Item>
+                      <div style={{ width: '200px', display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', marginBottom: '20px' }}>
+                          <p style={{ marginRight: '10px', marginBottom: '0px', fontWeight: '900' }}>Precio unitario:</p>
+                          <p style={{ marginRight: '10px', marginBottom: '0px', fontWeight: '300' }}>{product.unitPrice}</p>
+                        </div>
+                        <Form.Item label="Subtotal" style={{ width: 200, marginRight: '15px' }} rules={[{ required: true }]}>
+                          <Input type='number' name='subtotal' value={product.subtotal} placeholder='Precio' onChange={(v) => onChangeHandler(v, i)} />
+                        </Form.Item>
+                      </div>
                     </div>
                   </Card>
                 </>

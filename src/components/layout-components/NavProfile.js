@@ -61,19 +61,19 @@ export const NavProfile = () => {
           <Menu.Item key={menuItem.length} onClick={() => history.push(APP_PREFIX_PATH + '/edituser')}>
             <span>
               <UserOutlined className="mr-3" />
-              <span className="font-weight-normal">Edit User</span>
+              <span className="font-weight-normal">Editar usuario</span>
             </span>
           </Menu.Item>
           <Menu.Item key={menuItem.length+1} onClick={() => history.push(APP_PREFIX_PATH + '/changepassword')}>
             <span>
               <UserSwitchOutlined className="mr-3" />
-              <span className="font-weight-normal">Change Password</span>
+              <span className="font-weight-normal">Cambiar contraseña</span>
             </span>
           </Menu.Item>
           <Menu.Item key={menuItem.length + 2} onClick={signOut}>
             <span>
               <LogoutOutlined className="mr-3" />
-              <span className="font-weight-normal">Sign Out</span>
+              <span className="font-weight-normal">Cerrar sesión</span>
             </span>
           </Menu.Item>
         </Menu>

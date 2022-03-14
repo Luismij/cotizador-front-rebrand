@@ -43,7 +43,7 @@ const AddMarking = ({ history }) => {
         }
       }
       await axios.request(options)
-      message.success({ content: 'Cliente creado con exito' })
+      message.success({ content: 'Marcación creada con exito' })
       history.push(APP_PREFIX_PATH + '/markings')
     } catch (error) {
       console.error(error);
@@ -63,7 +63,7 @@ const AddMarking = ({ history }) => {
 
   const onChangeInk = (v, i) => {
     const num = Number(v.target.value);
-    if ((Number.isInteger(num) && num > 0) || v.target.value === '') {
+    if ((Number.isInteger(num) && num >= 0) || v.target.value === '') {
       let aux = { ...marking }
       aux.inks[i][v.target.name] = v.target.value
       setMarking(aux)

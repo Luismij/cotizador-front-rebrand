@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Table, Input, Button, Popconfirm, message } from 'antd'
-import { EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons'
+import { EditOutlined, DeleteOutlined } from '@ant-design/icons'
 import { APP_PREFIX_PATH, API_BASE_URL } from 'configs/AppConfig'
 import axios from 'axios'
 import Loading from 'components/shared-components/Loading'
@@ -11,7 +11,6 @@ const Actions = (id, deleteMarking, editMarking, selectMarking) => {
 
   return (
     <div>
-      <EyeOutlined onClick={() => selectMarking(id)} style={{ fontSize: '25px', marginRight: '15px' }} />
       <EditOutlined onClick={() => editMarking(id)} style={{ fontSize: '25px', marginRight: '15px' }} />
       <Popconfirm title="Sure to delete?" onConfirm={() => deleteMarking(id)}>
         <DeleteOutlined style={{ fontSize: '25px' }} />
@@ -19,6 +18,60 @@ const Actions = (id, deleteMarking, editMarking, selectMarking) => {
     </div>
   )
 }
+
+
+const expandedRowRender = ({ inks, ranges }) => {
+
+  const columns = inks ? [
+    {
+      title: 'Tintas',
+      children: [
+        {
+          title: 'Precio Minimo',
+          dataIndex: 'minTotalPrice',
+          key: 'minTotalPrice',
+        },
+        {
+          title: 'Precio unitario fuera de rango',
+          dataIndex: 'outOfRangePrice',
+          key: 'outOfRangePrice',
+        },
+        {
+          title: 'Rangos',
+          dataIndex: 'ranges',
+          key: 'ranges',
+          render: (r) => (<div>{r.length}</div>)
+        }
+      ]
+    },
+  ] : ranges ? [
+    {
+      title: 'Rangos',
+      children: [
+        {
+          title: 'Desde',
+          dataIndex: 'min',
+          key: 'min',
+        },
+        {
+          title: 'Hasta',
+          dataIndex: 'max',
+          key: 'max',
+        },
+        {
+          title: 'Precio unitario',
+          dataIndex: 'price',
+          key: 'price',
+        }
+      ]
+    },
+  ] : []
+
+  return (
+    <Table columns={columns} dataSource={inks ? inks : ranges} rowKey={'_id'} expandable={inks ? { expandedRowRender } : null} />
+  )
+}
+
 const Markings = ({ history }) => {
   const [loading, setLoading] = useState(true)
   const [markings, setMarkings] = useState([])
@@ -56,7 +109,7 @@ const Markings = ({ history }) => {
   }
 
   const deleteMarking = async (id) => {
-    setMarkings(markings.filter(p => p.id !== id))
+    setMarkings(markings.filter(p => p._id !== id))
     try {
       const jwt = localStorage.getItem('jwt')
       const options = {
@@ -84,7 +137,7 @@ const Markings = ({ history }) => {
       title: 'Tintas',
       dataIndex: 'inks',
       key: 'inks',
-      render: (r)=> (<div>{r.length}</div>),
+      render: (r) => (<div>{r.length}</div>),
     },
     {
       title: 'Acciones',
@@ -114,15 +167,13 @@ const Markings = ({ history }) => {
     <div>
       <div style={{ flexDirection: 'row', display: 'flex', marginBottom: '20px' }}>
         <Input.Search allowClear placeholder="Search" onSearch={value => search(value)} style={{ marginRight: '4px' }} enterButton />
-        <Button onClick={() => history.push(APP_PREFIX_PATH + '/addmarking')} style={{ marginBottom: '20px' }}>Crear cliente</Button>
+        <Button onClick={() => history.push(APP_PREFIX_PATH + '/addmarking')} style={{ marginBottom: '20px' }}>Crear marcación</Button>
       </div>
       <Table
-        onRow={(record, rowIndex) => {
-          return {
-            onDoubleClick: () => { selectMarking(record._id, rowIndex) }, // click row
-          };
-        }}
-        columns={columns} dataSource={markings} rowKey="_id"
+        expandable={{ expandedRowRender }}
+        columns={columns}
+        dataSource={markings}
+        rowKey="_id"
       />
     </div>
   )

@@ -11,7 +11,7 @@ export const AppViews = () => {
 
   useEffect(() => {
     if (!user) history.push(AUTH_PREFIX_PATH + '/login');// eslint-disable-next-line
-  }, [])
+  }, [user])
 
   if (!user) {
     return (<Loading cover='content' />)

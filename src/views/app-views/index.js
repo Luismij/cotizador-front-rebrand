@@ -22,10 +22,11 @@ export const AppViews = () => {
       <Switch>
         <Route path={`${APP_PREFIX_PATH}/edituser`} component={lazy(() => import(`./editUser`))} />
         <Route path={`${APP_PREFIX_PATH}/customers`} component={lazy(() => import(`./customers`))} />
-        <Route path={`${APP_PREFIX_PATH}/addcustomer`} component={lazy(() => import(`./addCustomer`))} />
-        <Route path={`${APP_PREFIX_PATH}/editcustomer/:customerid`} component={lazy(() => import(`./editCustomer`))} />
+        <Route path={`${APP_PREFIX_PATH}/addcustomer`} component={lazy(() => import(`./customers/addCustomer`))} />
+        <Route path={`${APP_PREFIX_PATH}/editcustomer/:customerid`} component={lazy(() => import(`./customers/editCustomer`))} />
         <Route path={`${APP_PREFIX_PATH}/addquote`} component={lazy(() => import(`./addQuote`))} />
-        <Route path={`${APP_PREFIX_PATH}/addmarking`} component={lazy(() => import(`./addMarking`))} />
+        <Route path={`${APP_PREFIX_PATH}/addmarking`} component={lazy(() => import(`./markings/addMarking`))} />
+        <Route path={`${APP_PREFIX_PATH}/editmarking/:markingId`} component={lazy(() => import(`./markings/editmarkings`))} />
         <Route path={`${APP_PREFIX_PATH}/markings`} component={lazy(() => import(`./markings`))} />
         <Route path={`${APP_PREFIX_PATH}/changepassword`} component={lazy(() => import(`./passwordChange`))} />
         <Redirect from={`${APP_PREFIX_PATH}`} to={`${APP_PREFIX_PATH}/customers`} />

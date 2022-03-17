@@ -143,7 +143,7 @@ const AddQuote = ({ history }) => {
     return product
   }
 
-  const addProduct = () => setProductsToQuote([...productsToQuote, { product: null, price: 0, typeOfPrice: 'net', netPrice: 0, priceDescription: '', markings: [{ amount: 0, markingPrice: 0, freight: 0, unitPrice: 0, profit: 0, totalPrice: 0, name: null, ink: null, i: null }], discount: false, observations: '' }])
+  const addProduct = () => setProductsToQuote([...productsToQuote, { product: null, price: 0, typeOfPrice: 'net', netPrice: 0, priceDescription: '', amount: 0, freight: 0, profit: 0, markings: [{ markingPrice: 0, unitPrice: 0, totalPrice: 0, name: null, ink: null, i: null }], discount: false, observations: '' }])
 
   const deleteProduct = (i) => {
     let aux = [...productsToQuote]
@@ -184,7 +184,7 @@ const AddQuote = ({ history }) => {
 
   const addMarking = (i) => {
     let aux = [...productsToQuote]
-    aux[i].markings.push({ amount: 0, markingPrice: 0, freight: 0, unitPrice: 0, profit: 0, totalPrice: 0, name: null, ink: null, i: null })
+    aux[i].markings.push({ markingPrice: 0, unitPrice: 0, totalPrice: 0, name: null, ink: null, i: null })
     setProductsToQuote(aux)
   }
 

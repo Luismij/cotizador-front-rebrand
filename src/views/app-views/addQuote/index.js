@@ -136,7 +136,7 @@ const AddQuote = ({ history }) => {
       }
       if (sum > 0) {
         product.markings[j].markingPrice = sum / product.amount
-      }
+      } else product.markings[j].markingPrice = 0
       product.markings[j].unitPrice = (parseFloat(product.netPrice) + parseFloat(product.markings[j].markingPrice) + parseFloat(product.freight)) / (product.profit > 0 ? ((100 - product.profit) / 100) : 1)
       product.markings[j].totalPrice = product.markings[j].unitPrice * product.amount
     });
@@ -163,17 +163,21 @@ const AddQuote = ({ history }) => {
   }
 
   const onChangeHandler = (v, i) => {
-    if (v.target.value < 0) return
+    const value = v.target.value.toString().replace(/\$\s?|(,*)/g, '')
+    if (!value.match(/^-?\d+$/) && value !== '') return
+    if (value < 0) return
     let aux = [...productsToQuote]
-    aux[i][v.target.name] = v.target.value
+    aux[i][v.target.name] = value !== '' ? parseInt(value) : 0
     aux[i] = calculatePrices(aux[i])
     setProductsToQuote(aux)
   }
 
   const onChangeHandlerMark = (v, i, j) => {
-    if (v.target.value < 0) return
+    const value = v.target.value.toString().replace(/\$\s?|(,*)/g, '')
+    if (!value.match(/^\d+\.\d+$/) && value !== '') return
+    if (value < 0) return
     let aux = [...productsToQuote]
-    aux[i].markings[j][v.target.name] = v.target.value
+    aux[i].markings[j][v.target.name] = value !== '' ? parseFloat(value).toFixed(2) : 0
     if (v.target.name !== 'totalPrice') aux[i] = calculatePrices(aux[i])
     setProductsToQuote(aux)
   }
@@ -342,19 +346,33 @@ const AddQuote = ({ history }) => {
                       <div style={{ minWidth: '550px', display: 'flex', flexDirection: 'column' }}>
                         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                           <Form.Item label="Cantidad" style={{ width: 100, marginRight: '15px', marginBottom: '0px' }} rules={[{ required: true }]}>
-                            <Input type='number' name='amount' value={product.amount} placeholder='Cantidad' style={{ width: 100 }} onChange={(v) => onChangeHandler(v, i)} />
+                            <Input
+                              name='amount'
+                              value={product.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                              placeholder='Cantidad'
+                              style={{ width: 100 }}
+                              onChange={(v) => onChangeHandler(v, i)} />
                           </Form.Item>
                           <Form.Item label="Flete" style={{ width: 100, marginRight: '15px', marginBottom: '0px' }} rules={[{ required: true }]}>
-                            <Input type='number' name='freight' value={product.freight} placeholder='Flete' style={{ width: 100 }} onChange={(v) => onChangeHandler(v, i)} />
+                            <Input
+                              prefix='$'
+                              name='freight'
+                              value={product.freight.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                              placeholder='Flete'
+                              style={{ width: 100 }}
+                              onChange={(v) => onChangeHandler(v, i)} />
                           </Form.Item>
                           <Form.Item label="Utilidad %" style={{ width: 70, marginRight: '15px', marginBottom: '0px' }} rules={[{ required: true }]}>
-                            <Input type='number' name='profit' value={product.profit} placeholder='Utilidad' style={{ width: 70 }} onChange={(v) => onChangeHandler(v, i)} />
+                            <Input
+                              suffix='%'
+                              name='profit'
+                              value={product.profit.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                              placeholder='Utilidad'
+                              style={{ width: 70 }}
+                              onChange={(v) => onChangeHandler(v, i)} />
                           </Form.Item>
                         </div>
                         <Divider style={{ margin: '15px' }} />
-                        {product.markings.length === 0 &&
-                          <p style={{ fontWeight: '900' }}>Sin marcacion</p>
-                        }
                         {product.markings.map((m, j) => (
                           <div key={`marking ${i}-${j}`}>
                             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -398,13 +416,31 @@ const AddQuote = ({ history }) => {
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                               <Form.Item label="Marcacion" style={{ width: 100, marginRight: '15px' }} rules={[{ required: true }]}>
-                                <Input type='number' name='markingPrice' value={Number.parseFloat(m.markingPrice).toFixed(2)} placeholder='Precio de marcacion' style={{ width: 110 }} onChange={(v) => onChangeHandlerMark(v, i, j)} />
+                                <Input
+                                  prefix='$'
+                                  name='markingPrice'
+                                  value={Number.parseFloat(m.markingPrice).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                  placeholder='Precio de marcacion'
+                                  style={{ width: 110 }}
+                                  onChange={(v) => onChangeHandlerMark(v, i, j)} />
                               </Form.Item>
                               <Form.Item label="Precio unitario" style={{ width: 100, marginRight: '15px' }} rules={[{ required: true }]}>
-                                <Input type='number' name='unitPrice' value={Number.parseFloat(m.unitPrice).toFixed(2)} placeholder='Precio unitario' style={{ width: 110 }} onChange={(v) => onChangeHandlerMark(v, i, j)} />
+                                <Input
+                                  prefix='$'
+                                  name='unitPrice'
+                                  value={Number.parseFloat(m.unitPrice).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                  placeholder='Precio unitario'
+                                  style={{ width: 110 }}
+                                  onChange={(v) => onChangeHandlerMark(v, i, j)} />
                               </Form.Item>
                               <Form.Item label="Total" style={{ width: 130, marginRight: '15px' }} rules={[{ required: true }]}>
-                                <Input type='number' name='totalPrice' value={Number.parseFloat(m.totalPrice).toFixed(2)} placeholder='Precio Total' style={{ width: 130 }} onChange={(v) => onChangeHandlerMark(v, i, j)} />
+                                <Input
+                                  prefix='$'
+                                  name='totalPrice'
+                                  value={Number.parseFloat(m.totalPrice).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                  placeholder='Precio Total'
+                                  style={{ width: 130 }}
+                                  onChange={(v) => onChangeHandlerMark(v, i, j)} />
                               </Form.Item>
                             </div>
                             <Divider style={{ margin: '15px' }} />

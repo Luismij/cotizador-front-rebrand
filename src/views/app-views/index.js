@@ -29,6 +29,8 @@ export const AppViews = () => {
         <Route path={`${APP_PREFIX_PATH}/editmarking/:markingId`} component={lazy(() => import(`./markings/editmarkings`))} />
         <Route path={`${APP_PREFIX_PATH}/markings`} component={lazy(() => import(`./markings`))} />
         <Route path={`${APP_PREFIX_PATH}/changepassword`} component={lazy(() => import(`./passwordChange`))} />
+        <Route path={`${APP_PREFIX_PATH}/discount`} component={lazy(() => import(`./discount`))} />
+        <Route path={`${APP_PREFIX_PATH}/editdiscount`} component={lazy(() => import(`./discount/editDiscount`))} />
         <Redirect from={`${APP_PREFIX_PATH}`} to={`${APP_PREFIX_PATH}/customers`} />
       </Switch>
     </Suspense>

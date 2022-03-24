@@ -2,7 +2,9 @@ import {
   FileOutlined,
   TeamOutlined,
   PlusOutlined,
-  BgColorsOutlined
+  BgColorsOutlined,
+  PercentageOutlined,
+  EditOutlined
 } from '@ant-design/icons';
 import { APP_PREFIX_PATH } from 'configs/AppConfig'
 
@@ -78,9 +80,33 @@ const navigationConfig = (user) => {
     ]
   }
 
+  const discountMenu = 
+  {
+    key: `Descuentos`,
+    title: 'Descuentos',
+    icon: PercentageOutlined,
+    submenu: [
+      {
+        key: `${APP_PREFIX_PATH}/discount`,
+        path: `${APP_PREFIX_PATH}/discount`,
+        title: 'Descuentos',
+        icon: PercentageOutlined,
+        submenu: []
+      },
+      {
+        key: `${APP_PREFIX_PATH}/editdiscount`,
+        path: `${APP_PREFIX_PATH}/editdiscount`,
+        title: 'Editar Descuento',
+        icon: EditOutlined,
+        submenu: []
+      }
+    ]
+  }
+
   menu.push(customerMenu)
   menu.push(quoteMenu)
   menu.push(markingsMenu)
+  menu.push(discountMenu)
 
   return menu
 }

@@ -158,7 +158,7 @@ const AddMarking = ({ history, match }) => {
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'row', width: '280px', alignItems: 'center' }}>
                       <p style={{ marginBottom: '0px', marginRight: '10px', fontWeight: '900' }}>Precio unitario:</p>
-                      <Input value={range.price} name='price' placeholder='Hasta' onChange={(v) => onChangeRange(v, i, j)} />
+                      <Input value={range.price} name='price' placeholder='Precio' onChange={(v) => onChangeRange(v, i, j)} />
                     </div>
                   </div>
                   <Button style={{ backgroundColor: '#ff7575', marginTop: '20px' }} onClick={() => deleteRange(i, j)}>

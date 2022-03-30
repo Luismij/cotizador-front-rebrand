@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { Form, Input, InputNumber, Button, Card, message } from 'antd';
+import { Form, Input, InputNumber, Upload, Button, Card, message } from 'antd';
+import { InboxOutlined } from '@ant-design/icons';
 import { APP_PREFIX_PATH, API_BASE_URL } from 'configs/AppConfig'
 import axios from 'axios'
 import Loading from 'components/shared-components/Loading'
@@ -19,6 +20,14 @@ const validateMessages = {
     range: 'Must be between ${min} and ${max}',
   },
 };
+
+const uploadHandle = (info) => {
+  if (info.fileList[1]) {
+    return [info.fileList[1]]
+  } else if (info.fileList[0]) {
+    return [info.fileList[0]]
+  } else return []
+}
 
 Object.filter = (obj, predicate) =>
   Object.keys(obj)
@@ -56,15 +65,24 @@ const EditUser = ({ history, match }) => {
 
   const onFinish = async (form) => {
     setLoading(true)
-    let data = Object.filter(form, item => item !== undefined)
+    let filterData = Object.filter(form, item => item !== undefined && item !== '')
     const jwt = localStorage.getItem('jwt')
+    const data = new FormData()
+    for (const key in filterData) {
+      if (key !== 'logo') {
+        const item = filterData[key];
+        data.append(key, item)
+      } else {
+        data.append(key, form.logo[0].originFileObj)
+      }
+    }
     try {
       const options = {
         url: API_BASE_URL + '/user/',
         method: 'PUT',
         data,
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'multipart/form-data',
           'jwt-token': jwt
         }
       }
@@ -90,6 +108,14 @@ const EditUser = ({ history, match }) => {
         </Form.Item>
         <Form.Item name={['email']} label="Correo" rules={[{ type: 'email' }]}>
           <Input />
+        </Form.Item>
+        <Form.Item name={['logo']} label="Logo" valuePropName="logo" getValueFromEvent={uploadHandle} rules={[{ required: true }]}>
+          <Upload.Dragger style={{ width: '300px' }} method='get' accept='image/*' name="logo" action="/upload.do" multiple={false} onChange={uploadHandle} onPreview>
+            <p className="ant-upload-drag-icon">
+              <InboxOutlined />
+            </p>
+            <p className="ant-upload-text" style={{ color: 'black' }}>Haz click o arrastra tu logo a esta area</p>
+          </Upload.Dragger>
         </Form.Item>
         <Form.Item name={['phone']} label="Telefono" >
           <InputNumber style={{ width: '200px' }} />

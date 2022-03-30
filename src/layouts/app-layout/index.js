@@ -2,7 +2,6 @@ import React from 'react';
 import { connect } from 'react-redux';
 import SideNav from 'components/layout-components/SideNav';
 import TopNav from 'components/layout-components/TopNav';
-import Loading from 'components/shared-components/Loading';
 import MobileNav from 'components/layout-components/MobileNav'
 import HeaderNav from 'components/layout-components/HeaderNav';
 import PageHeader from 'components/layout-components/PageHeader';
@@ -23,7 +22,6 @@ import {
   DIR_LTR
 } from 'constants/ThemeConstant';
 import utils from 'utils';
-import { useThemeSwitcher } from "react-css-theme-switcher";
 
 const { Content } = Layout;
 const { useBreakpoint } = Grid;
@@ -34,16 +32,12 @@ export const AppLayout = ({ navCollapsed, navType, location, direction }) => {
   const isMobile = !screens.includes('lg')
   const isNavSide = navType === NAV_TYPE_SIDE
   const isNavTop = navType === NAV_TYPE_TOP
+
   const getLayoutGutter = () => {
     if (isNavTop || isMobile) {
       return 0
     }
     return navCollapsed ? SIDE_NAV_COLLAPSED_WIDTH : SIDE_NAV_WIDTH
-  }
-
-  const { status } = useThemeSwitcher();
-  if (status === 'loading' || status === 'idle') {
-    return <Loading cover="page" />;
   }
 
   const getLayoutDirectionGutter = () => {

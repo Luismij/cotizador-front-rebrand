@@ -44,7 +44,7 @@ const AddQuote = ({ history }) => {
   const [customers, setCustomers] = useState([])
   const [products, setProducts] = useState([])
   const [markings, setMarkings] = useState([])
-  const [productsToQuote, setProductsToQuote] = useState([{ product: null, price: 0, typeOfPrice: 'net', netPrice: 0, priceDescription: '', amount: 0, freight: 0, profit: 0, markings: [{ markingPrice: 0, unitPrice: 0, totalPrice: 0, name: null, ink: null, i: null }], discount: false, observations: '' }])
+  const [productsToQuote, setProductsToQuote] = useState([{ product: null, price: 0, typeOfPrice: 'net', priceDescription: '', freight: 0, profit: 0, markings: [{ netPrice: 0, amount: 0, markingPrice: 0, unitPrice: 0, totalPrice: 0, name: null, ink: null, i: null }], discount: false, observations: '' }])
   const { user } = useContext(UserContext)
 
   useEffect(() => {
@@ -103,61 +103,62 @@ const AddQuote = ({ history }) => {
   }, [])
 
   const calculatePrices = (product) => {
-    switch (product.typeOfPrice) {
-      case 'net':
-        product.netPrice = product.price
-        break;
-      case 'offer':
-        product.netPrice = (product.price * 0.6) * 0.85
-        break;
-      case 'full':
-        product.netPrice = product.price * 0.6
-        if (product.discount && user.discount && user.discount.ranges.length > 0) {
-          let inRange = false
-          for (const range of user.discount.ranges) {
-            if (product.amount * product.netPrice >= range.min && product.amount * product.netPrice <= range.max) {
-              product.netPrice = (product.price * 0.6) * ((100 - range.discount) / 100)
-              inRange = true
-              break
-            } else if (product.amount * product.netPrice < range.min) inRange = true
-          }
-          if (!inRange) {
-            product.netPrice = (product.price * 0.6) * ((100 - user.discount.outOfRangeDiscount) / 100)
-          }
-        }
-        break;
-      default:
-        break;
-    }
-    console.log(product.netPrice);
+
     product.markings.forEach((mark, j) => {
+      switch (product.typeOfPrice) {
+        case 'net':
+          mark.netPrice = product.price
+          break;
+        case 'offer':
+          mark.netPrice = (product.price * 0.6) * 0.85
+          break;
+        case 'full':
+          mark.netPrice = product.price * 0.6
+          if (product.discount && user.discount && user.discount.ranges.length > 0) {
+            let inRange = false
+            for (const range of user.discount.ranges) {
+              if (mark.amount * mark.netPrice >= range.min && mark.amount * mark.netPrice <= range.max) {
+                mark.netPrice = (product.price * 0.6) * ((100 - range.discount) / 100)
+                inRange = true
+                break
+              } else if (mark.amount * mark.netPrice < range.min) inRange = true
+            }
+            if (!inRange) {
+              mark.netPrice = (product.price * 0.6) * ((100 - user.discount.outOfRangeDiscount) / 100)
+            }
+          }
+          break;
+        default:
+          break;
+      }
+
       let sum = 0
       if (mark.ink) {
         let inRange = false
         for (const ran of mark.ink.ranges) {
-          if (product.amount >= ran.min && product.amount <= ran.max) {
-            sum = product.amount * ran.price
+          if (mark.amount >= ran.min && mark.amount <= ran.max) {
+            sum = mark.amount * ran.price
             inRange = true
             break
-          } else if (product.amount < ran.min) {
+          } else if (mark.amount < ran.min) {
             sum = mark.ink.minTotalPrice
             inRange = true
           }
         }
         if (!inRange) {
-          sum += mark.ink.outOfRangePrice * product.amount
+          sum += mark.ink.outOfRangePrice * mark.amount
         }
       }
       if (sum > 0) {
-        product.markings[j].markingPrice = sum / product.amount
+        product.markings[j].markingPrice = sum / mark.amount
       } else product.markings[j].markingPrice = 0
-      product.markings[j].unitPrice = (parseFloat(product.netPrice) + parseFloat(product.markings[j].markingPrice) + parseFloat(product.freight)) / (product.profit > 0 ? ((100 - product.profit) / 100) : 1)
-      product.markings[j].totalPrice = product.markings[j].unitPrice * product.amount
+      product.markings[j].unitPrice = (parseFloat(mark.netPrice) + parseFloat(product.markings[j].markingPrice) + parseFloat(product.freight)) / (product.profit > 0 ? ((100 - product.profit) / 100) : 1)
+      product.markings[j].totalPrice = product.markings[j].unitPrice * mark.amount
     });
     return product
   }
 
-  const addProduct = () => setProductsToQuote([...productsToQuote, { product: null, price: 0, typeOfPrice: 'net', netPrice: 0, priceDescription: '', amount: 0, freight: 0, profit: 0, markings: [{ markingPrice: 0, unitPrice: 0, totalPrice: 0, name: null, ink: null, i: null }], discount: false, observations: '' }])
+  const addProduct = () => setProductsToQuote([...productsToQuote, { product: null, price: 0, typeOfPrice: 'net', priceDescription: '', freight: 0, profit: 0, markings: [{ netPrice: 0, amount: 0, markingPrice: 0, unitPrice: 0, totalPrice: 0, name: null, ink: null, i: null }], discount: false, observations: '' }])
 
   const deleteProduct = (i) => {
     let aux = [...productsToQuote]
@@ -188,17 +189,22 @@ const AddQuote = ({ history }) => {
 
   const onChangeHandlerMark = (v, i, j) => {
     const value = v.target.value.toString().replace(/\$\s?|(,*)/g, '')
-    if (!value.match(/^\d+\.\d+$/) && value !== '') return
+    if (!(value.match(/^\d+\.\d+$/) || value.match(/^\d+$/)) && value !== '') return
     if (value < 0) return
     let aux = [...productsToQuote]
-    aux[i].markings[j][v.target.name] = value !== '' ? parseFloat(value).toFixed(2) : 0
-    if (v.target.name !== 'totalPrice') aux[i] = calculatePrices(aux[i])
+    console.log(value !== '' ? parseInt(value) : 0);
+    if (v.target.name === 'amount') {
+      aux[i].markings[j][v.target.name] = value !== '' ? parseInt(value) : 0
+    } else {
+      aux[i].markings[j][v.target.name] = value !== '' ? parseFloat(value).toFixed(2) : 0
+    }
+    if (v.target.name !== 'totalPrice' || v.target.name === 'amount') aux[i] = calculatePrices(aux[i])
     setProductsToQuote(aux)
   }
 
   const addMarking = (i) => {
     let aux = [...productsToQuote]
-    aux[i].markings.push({ markingPrice: 0, unitPrice: 0, totalPrice: 0, name: null, ink: null, i: null })
+    aux[i].markings.push({ netPrice: 0, amount: 0, markingPrice: 0, unitPrice: 0, totalPrice: 0, name: null, ink: null, i: null })
     setProductsToQuote(aux)
   }
 
@@ -308,7 +314,7 @@ const AddQuote = ({ history }) => {
                         <img src={`https://catalogospromocionales.com/${product.product.photo}`} style={{ objectFit: 'contain', width: '200px' }} alt={product.product.name} />
                       </Card>
                       <div style={{ width: '230px', display: 'flex', flexDirection: 'column' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
                           <p style={{ marginRight: '10px', marginBottom: '0px', fontWeight: '900' }}>Nombre:</p>
                           <p style={{ marginRight: '10px', marginBottom: '0px', fontWeight: '300' }}>{product.product.name}</p>
                         </div>
@@ -360,24 +366,13 @@ const AddQuote = ({ history }) => {
                             Aplicar descuento
                           </Checkbox>
                         }
-                        <div style={{ display: 'flex', flexDirection: 'column', flexWrap: 'wrap' }}>
-                          <p style={{ marginRight: '10px', marginBottom: '0px', fontWeight: '900' }}>Precio neto:</p>
-                          <p style={{ marginRight: '10px', marginBottom: '0px', fontWeight: '300' }}>${product.netPrice.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</p>
-                        </div>
+
                         <Form.Item label="Observaciones" style={{ width: 200, marginRight: '15px' }} rules={[{ required: true }]}>
                           <Input.TextArea style={{ minWidth: '220px' }} name='observations' value={product.observations} placeholder='Observaciones' onChange={(v) => onChangeObservations(i, v)} />
                         </Form.Item>
                       </div>
                       <div style={{ minWidth: '550px', display: 'flex', flexDirection: 'column' }}>
                         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <Form.Item label="Cantidad" style={{ width: 100, marginRight: '15px', marginBottom: '0px' }} rules={[{ required: true }]}>
-                            <Input
-                              name='amount'
-                              value={product.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                              placeholder='Cantidad'
-                              style={{ width: 100 }}
-                              onChange={(v) => onChangeHandler(v, i)} />
-                          </Form.Item>
                           <Form.Item label="Flete" style={{ width: 100, marginRight: '15px', marginBottom: '0px' }} rules={[{ required: true }]}>
                             <Input
                               prefix='$'
@@ -430,7 +425,7 @@ const AddQuote = ({ history }) => {
                                     }
                                   >
                                     {markings[m.i].inks.map((ink, k) => (
-                                      <Option value={k} key={`ink ${i - j - k}`}>{`Tinta ${k + 1}`}</Option>
+                                      <Option value={k} key={`ink ${i - j - k}`}>{ink.name}</Option>
                                     ))}
                                   </Select>
                                 </Form.Item>
@@ -440,6 +435,22 @@ const AddQuote = ({ history }) => {
                               </Button>
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                              <Form.Item label="Cantidad" style={{ width: 100, marginRight: '15px' }} rules={[{ required: true }]}>
+                                <Input
+                                  name='amount'
+                                  value={m.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                  placeholder='Cantidad'
+                                  style={{ width: 100 }}
+                                  onChange={(v) => onChangeHandlerMark(v, i, j)} />
+                              </Form.Item>
+                              <Form.Item label="Precio Neto" style={{ width: 100, marginRight: '15px' }} rules={[{ required: true }]}>
+                                <Input
+                                  prefix='$'
+                                  value={Number.parseFloat(m.netPrice).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                  placeholder='Precio neto'
+                                  style={{ width: 110 }}
+                                />
+                              </Form.Item>
                               <Form.Item label="Marcacion" style={{ width: 100, marginRight: '15px' }} rules={[{ required: true }]}>
                                 <Input
                                   prefix='$'

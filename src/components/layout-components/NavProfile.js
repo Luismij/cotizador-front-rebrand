@@ -11,7 +11,7 @@ import {
 } from '@ant-design/icons';
 import { useHistory } from "react-router-dom";
 import { UserContext } from "contexts/UserContext";
-import { APP_PREFIX_PATH, AUTH_PREFIX_PATH } from 'configs/AppConfig'
+import { APP_PREFIX_PATH, AUTH_PREFIX_PATH, API_BASE_URL } from 'configs/AppConfig'
 
 const menuItem = [
   {
@@ -64,7 +64,7 @@ export const NavProfile = () => {
               <span className="font-weight-normal">Editar usuario</span>
             </span>
           </Menu.Item>
-          <Menu.Item key={menuItem.length+1} onClick={() => history.push(APP_PREFIX_PATH + '/changepassword')}>
+          <Menu.Item key={menuItem.length + 1} onClick={() => history.push(APP_PREFIX_PATH + '/changepassword')}>
             <span>
               <UserSwitchOutlined className="mr-3" />
               <span className="font-weight-normal">Cambiar contraseña</span>
@@ -80,11 +80,15 @@ export const NavProfile = () => {
       </div>
     </div>
   );
+  console.log();
   return (
     <Dropdown placement="bottomRight" overlay={profileMenu} trigger={["click"]}>
       <Menu className="d-flex align-item-center" mode="horizontal">
         <Menu.Item key="profile">
-          <Avatar icon={<UserOutlined />} />
+          {user.logo ?
+            <img style={{ width: '45px', objectFit: 'contain' }} src={API_BASE_URL + '/image/' + user.logo} alt='Logo'/> :
+            <Avatar icon={<UserOutlined />} />
+          }
         </Menu.Item>
       </Menu>
     </Dropdown>

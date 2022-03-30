@@ -27,7 +27,7 @@ Object.filter = (obj, predicate) =>
     .reduce((res, key) => (res[key] = obj[key], res), {});
 
 const AddMarking = ({ history }) => {
-  const [marking, setMarking] = useState({ name: '', inks: [{ minTotalPrice: '', outOfRangePrice: '', ranges: [{ min: '', max: '', price: '' }] }] })
+  const [marking, setMarking] = useState({ name: '', inks: [{ name: '', minTotalPrice: '', outOfRangePrice: '', ranges: [{ min: '', max: '', price: '' }] }] })
 
   const onFinish = async (form) => {
     const jwt = localStorage.getItem('jwt')
@@ -52,7 +52,7 @@ const AddMarking = ({ history }) => {
 
   const addInk = () => {
     let aux = { ...marking }
-    aux.inks.push({ minTotalPrice: 0, outOfRangePrice: 0, ranges: [{ min: 0, max: 0, price: 0 }] })
+    aux.inks.push({ name: '', minTotalPrice: 0, outOfRangePrice: 0, ranges: [{ min: 0, max: 0, price: 0 }] })
     setMarking(aux)
   }
   const addRange = (i) => {
@@ -62,11 +62,18 @@ const AddMarking = ({ history }) => {
   }
 
   const onChangeInk = (v, i) => {
-    const num = Number(v.target.value);
-    if ((Number.isInteger(num) && num >= 0) || v.target.value === '') {
+    if (v.target.name === 'name') {
+      console.log(v.target.value);
       let aux = { ...marking }
       aux.inks[i][v.target.name] = v.target.value
       setMarking(aux)
+    } else {
+      const num = Number(v.target.value);
+      if ((Number.isInteger(num) && num >= 0) || v.target.value === '') {
+        let aux = { ...marking }
+        aux.inks[i][v.target.name] = v.target.value
+        setMarking(aux)
+      }
     }
   }
 
@@ -101,6 +108,10 @@ const AddMarking = ({ history }) => {
           <Card title={`Tinta ${i + 1}`} key={i}>
             <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-around' }}>
+                <div style={{ display: 'flex', flexDirection: 'row', width: '280px', alignItems: 'center' }}>
+                  <p style={{ marginBottom: '0px', marginRight: '10px', fontWeight: '900' }}>Nombre de tinta:</p>
+                  <Input value={ink.name} name='name' placeholder='Nombre de tinta' onChange={(v) => onChangeInk(v, i)} style={{ width: '150px' }} />
+                </div>
                 <div style={{ display: 'flex', flexDirection: 'row', width: '280px', alignItems: 'center' }}>
                   <p style={{ marginBottom: '0px', marginRight: '10px', fontWeight: '900' }}>Precio minimo:</p>
                   <Input value={ink.minTotalPrice} name='minTotalPrice' placeholder='Precio minimo' onChange={(v) => onChangeInk(v, i)} style={{ width: '150px' }} />

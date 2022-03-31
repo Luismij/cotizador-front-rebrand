@@ -85,7 +85,7 @@ export const NavProfile = () => {
     <Dropdown placement="bottomRight" overlay={profileMenu} trigger={["click"]}>
       <Menu className="d-flex align-item-center" mode="horizontal">
         <Menu.Item key="profile">
-          {user.logo ?
+          {user?.logo ?
             <img style={{ width: '45px', objectFit: 'contain' }} src={API_BASE_URL + '/image/' + user.logo} alt='Logo'/> :
             <Avatar icon={<UserOutlined />} />
           }

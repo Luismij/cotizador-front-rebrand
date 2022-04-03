@@ -59,7 +59,7 @@ const pdfGenerator = async (quote, user) => {
   doc.text(425, 175, 'VALIDEZ DE LA PROPUESTA:')
   doc.text(425, 190, 'FORMA DE PAGO:')
   doc.setTextColor('#fc6100')
-  doc.text(425, 145, 'COTIZACION No.')
+  doc.text(425, 145, `COTIZACION No.${quote.quoteNumber}`)
   doc.setFont('Helvetica', 'normal')
   doc.setTextColor('#000')
   doc.text(70, 145, (moment(quote.createdAt).format('MMMM DD [DEL AÑO] YYYY')).toUpperCase())

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react'
-import { Select, Card, Form, Button, Input, Modal, Divider, Checkbox } from 'antd';
+import { Select, Card, Form, Button, Input, Modal, Divider, Checkbox, message, Table } from 'antd';
 import { DeleteFilled } from '@ant-design/icons';
 import { APP_PREFIX_PATH, API_BASE_URL } from 'configs/AppConfig'
 import Loading from 'components/shared-components/Loading'
@@ -8,43 +8,57 @@ import { UserContext } from 'contexts/UserContext';
 
 const { Option } = Select;
 
-const onFinish = async (form, setLoading, history) => {
+const onFinish = async (data, setLoading, history) => {
   setLoading(true)
   const jwt = localStorage.getItem('jwt')
-  const data = new FormData()
-  data.append('audio', form.dragger[0].originFileObj)
 
   try {
     const options = {
-      url: `${API_BASE_URL}/voices/reference/`,
+      url: `${API_BASE_URL}/quote/`,
       method: 'POST',
       data,
       headers: {
-        "Content-Type": "multipart/form-data",
-        'jwt-token': jwt,
-        referenceName: form.name,
-        customerId: form.customer,
-        type: 'reference'
+        "Content-Type": "application/json",
+        'jwt-token': jwt
       }
     }
     await axios.request(options)
-    Modal.success({
-      content: 'Audio uploaded successfully. The training has started, your voice will be ready to clone in two hours',
-      onOk: () => { history.push(APP_PREFIX_PATH + '/voices') }
-    })
   } catch (error) {
-    Modal.error({ content: 'Something went wrong' })
-    setLoading(false)
+    message.error({ content: 'Something went wrong' })
     console.error(error.response);
+  }
+  setLoading(false)
+}
+
+const getStock = async (sku) => {
+  const jwt = localStorage.getItem('jwt')
+  // Get the stock of a product
+  try {
+    const options = {
+      url: `${API_BASE_URL}/product/stock/${sku}`,
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'jwt-token': jwt
+      }
+    }
+    const stock = (await axios.request(options)).data
+    return stock
+  } catch (error) {
+    message.error({ content: `No se pudo cargar el stock de ${sku}` })
+    return []
   }
 }
 
 const AddQuote = ({ history }) => {
   const [loading, setLoading] = useState(true)
   const [customers, setCustomers] = useState([])
+  const [customer, setCustomer] = useState(0)
   const [products, setProducts] = useState([])
   const [markings, setMarkings] = useState([])
-  const [productsToQuote, setProductsToQuote] = useState([{ product: null, price: 0, typeOfPrice: 'net', priceDescription: '', freight: 0, profit: 0, markings: [{ netPrice: 0, amount: 0, markingPrice: 0, unitPrice: 0, totalPrice: 0, name: null, ink: null, i: null }], discount: false, observations: '' }])
+  const [stock, setStock] = useState([])
+  const [isOpen, setIsOpen] = useState(false)
+  const [quote, setQuote] = useState({ customer: null, wayToPay: '', validityPeriod: '', deliveryTime: '', seller: '', products: [{ product: null, price: 0, typeOfPrice: 'net', priceDescription: '', freight: 0, profit: 0, markings: [{ netPrice: 0, amount: 0, markingPrice: 0, unitPrice: 0, totalPrice: 0, name: null, ink: null, i: null }], discount: false, observations: '' }] })
   const { user } = useContext(UserContext)
 
   useEffect(() => {
@@ -102,8 +116,14 @@ const AddQuote = ({ history }) => {
     return () => CancelToken.cancel('Cancelling in cleanup')
   }, [])
 
-  const calculatePrices = (product) => {
+  const onChangeCustomer =(i)=>{
+    setCustomer(i)
+    let aux = { ...quote }
+    aux.customer = customers[i]
+    setQuote(aux)
+  }
 
+  const calculatePrices = (product) => {
     product.markings.forEach((mark, j) => {
       switch (product.typeOfPrice) {
         case 'net':
@@ -158,104 +178,113 @@ const AddQuote = ({ history }) => {
     return product
   }
 
-  const addProduct = () => setProductsToQuote([...productsToQuote, { product: null, price: 0, typeOfPrice: 'net', priceDescription: '', freight: 0, profit: 0, markings: [{ netPrice: 0, amount: 0, markingPrice: 0, unitPrice: 0, totalPrice: 0, name: null, ink: null, i: null }], discount: false, observations: '' }])
+  const openStock = async (sku) => {
+    setStock('loading')
+    setIsOpen(true)
+    setStock(await getStock(sku))
+  }
+
+  const addProduct = () => {
+    let aux = { ...quote }
+    aux.products.push({ product: null, price: 0, typeOfPrice: 'net', priceDescription: '', freight: 0, profit: 0, markings: [{ netPrice: 0, amount: 0, markingPrice: 0, unitPrice: 0, totalPrice: 0, name: null, ink: null, i: null }], discount: false, observations: '' })
+    setQuote(aux)
+  }
 
   const deleteProduct = (i) => {
-    let aux = [...productsToQuote]
-    aux.splice(i, 1)
-    setProductsToQuote(aux)
+    let aux = { ...quote }
+    aux.products.splice(i, 1)
+    setQuote(aux)
   }
 
   const onChangeProduct = (j, i) => {
-    let aux = [...productsToQuote]
-    aux[i].product = products[j]
-    if (aux[i].product.prices[0]) {
-      aux[i].price = aux[i].product.prices[0].price
-      aux[i].priceDescription = aux[i].product.prices[0].description
+    let aux = { ...quote }
+    aux.products[i].product = products[j]
+    if (aux.products[i].product.prices[0]) {
+      aux.products[i].price = aux.products[i].product.prices[0].price
+      aux.products[i].priceDescription = aux.products[i].product.prices[0].description
     }
-    aux[i] = calculatePrices(aux[i])
-    setProductsToQuote(aux)
+    aux.products[i] = calculatePrices(aux.products[i])
+    setQuote(aux)
   }
 
   const onChangeHandler = (v, i) => {
     const value = v.target.value.toString().replace(/\$\s?|(,*)/g, '')
     if (!value.match(/^-?\d+$/) && value !== '') return
     if (value < 0) return
-    let aux = [...productsToQuote]
-    aux[i][v.target.name] = value !== '' ? parseInt(value) : 0
-    aux[i] = calculatePrices(aux[i])
-    setProductsToQuote(aux)
+    let aux = { ...quote }
+    aux.products[i][v.target.name] = value !== '' ? parseInt(value) : 0
+    aux.products[i] = calculatePrices(aux.products[i])
+    setQuote(aux)
   }
 
   const onChangeHandlerMark = (v, i, j) => {
     const value = v.target.value.toString().replace(/\$\s?|(,*)/g, '')
     if (!(value.match(/^\d+\.\d+$/) || value.match(/^\d+$/)) && value !== '') return
     if (value < 0) return
-    let aux = [...productsToQuote]
-    console.log(value !== '' ? parseInt(value) : 0);
+    let aux = { ...quote }
     if (v.target.name === 'amount') {
-      aux[i].markings[j][v.target.name] = value !== '' ? parseInt(value) : 0
+      aux.products[i].markings[j][v.target.name] = value !== '' ? parseInt(value) : 0
     } else {
-      aux[i].markings[j][v.target.name] = value !== '' ? parseFloat(value).toFixed(2) : 0
+      aux.products[i].markings[j][v.target.name] = value !== '' ? parseFloat(value).toFixed(2) : 0
     }
-    if (v.target.name !== 'totalPrice' || v.target.name === 'amount') aux[i] = calculatePrices(aux[i])
-    setProductsToQuote(aux)
+    if (v.target.name !== 'totalPrice' || v.target.name === 'amount') aux.products[i] = calculatePrices(aux.products[i])
+    setQuote(aux)
   }
 
   const addMarking = (i) => {
-    let aux = [...productsToQuote]
-    aux[i].markings.push({ netPrice: 0, amount: 0, markingPrice: 0, unitPrice: 0, totalPrice: 0, name: null, ink: null, i: null })
-    setProductsToQuote(aux)
+    let aux = { ...quote }
+    aux.products[i].markings.push({ netPrice: 0, amount: 0, markingPrice: 0, unitPrice: 0, totalPrice: 0, name: null, ink: null, i: null })
+    setQuote(aux)
   }
 
   const onChangeMarking = (i, j, k) => {
-    let aux = [...productsToQuote]
-    aux[i].markings[j].name = markings[k].name
-    aux[i].markings[j].i = k
-    aux[i].markings[j].ink = null
-    aux[i] = calculatePrices(aux[i])
-    setProductsToQuote(aux)
+    let aux = { ...quote }
+    aux.products[i].markings[j].name = markings[k].name
+    aux.products[i].markings[j].i = k
+    aux.products[i].markings[j].ink = null
+    aux.products[i] = calculatePrices(aux.products[i])
+    setQuote(aux)
   }
 
   const onChangeInk = (i, j, k) => {
-    let aux = [...productsToQuote]
-    aux[i].markings[j].ink = markings[aux[i].markings[j].i].inks[k]
-    aux[i] = calculatePrices(aux[i])
-    setProductsToQuote(aux)
+    let aux = { ...quote }
+    aux.products[i].markings[j].ink = markings[aux.products[i].markings[j].i].inks[k]
+    aux.products[i] = calculatePrices(aux.products[i])
+    setQuote(aux)
   }
 
   const deleteMarking = (i, j) => {
-    let aux = [...productsToQuote]
-    aux[i].markings.splice(j, 1)
-    setProductsToQuote(aux)
+    let aux = { ...quote }
+    aux.products[i].markings.splice(j, 1)
+    setQuote(aux)
   }
 
   const onChangePrice = (i, j) => {
-    let aux = [...productsToQuote]
-    aux[i].price = aux[i].product.prices[j].price
-    aux[i].priceDescription = aux[i].product.prices[j].description
-    aux[i] = calculatePrices(aux[i])
-    setProductsToQuote(aux)
+    let aux = { ...quote }
+    aux.products[i].price = aux.products[i].product.prices[j].price
+    aux.products[i].priceDescription = aux.products[i].product.prices[j].description
+    aux.products[i] = calculatePrices(aux.products[i])
+    setQuote(aux)
   }
 
   const onTypePriceChange = (i, v) => {
-    let aux = [...productsToQuote]
-    aux[i].typeOfPrice = v
-    aux[i] = calculatePrices(aux[i])
-    setProductsToQuote(aux)
+    let aux = { ...quote }
+    aux.products[i].typeOfPrice = v
+    aux.products[i] = calculatePrices(aux.products[i])
+    setQuote(aux)
   }
 
   const onChangeObservations = (i, v) => {
-    let aux = [...productsToQuote]
-    aux[i].observations = v.target.value
-    setProductsToQuote(aux)
+    let aux = { ...quote }
+    aux.products[i].observations = v.target.value
+    setQuote(aux)
   }
 
   const applyDiscount = (v, i) => {
-    let aux = [...productsToQuote]
-    aux[i].discount = v.target.checked
-    aux[i] = calculatePrices(aux[i])
-    setProductsToQuote(aux)
+    let aux = { ...quote }
+    aux.products[i].discount = v.target.checked
+    aux.products[i] = calculatePrices(aux.products[i])
+    setQuote(aux)
   }
 
   if (loading) return (
@@ -264,26 +293,119 @@ const AddQuote = ({ history }) => {
     </div>
   )
 
+  const columns = [
+    {
+      title: 'Bodega Local',
+      dataIndex: 'bodegaLocal',
+      key: 'bodegaLocal',
+    },
+    {
+      title: 'Bodega Zona Franca',
+      dataIndex: 'bodegaZonaFranca',
+      key: 'bodegaZonaFranca',
+    },
+    {
+      title: 'Cantidad Transito',
+      dataIndex: 'cantidadTransito',
+      key: 'cantidadTransito',
+    },
+    {
+      title: 'Color',
+      dataIndex: 'color',
+      key: 'color',
+    },
+    {
+      title: 'Estado de la orden',
+      dataIndex: 'estadoOrden',
+      key: 'estadoOrden',
+    },
+    {
+      title: 'Llegada Bodega Local',
+      dataIndex: 'llegadaBodegaLocal',
+      key: 'llegadaBodegaLocal',
+    },
+    {
+      title: 'Total Disponible',
+      dataIndex: 'totalDisponible',
+      key: 'totalDisponible',
+    },
+  ]
+
   return (
     <div>
+      <Modal
+        visible={isOpen}
+        onOk={() => setIsOpen(false)}
+        onCancel={() => setIsOpen(false)}
+        footer={<></>}
+        width={1000}
+      >
+        {stock[0]?.referencia &&
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <h2>{stock[0].referencia}</h2>
+          </div>
+        }
+        {stock !== 'loading' ?
+          < Table columns={columns} dataSource={stock} rowKey='id' /> :
+          <div style={{ height: '200px' }}>
+            <Loading cover="content" />
+          </div>
+        }
+      </Modal>
       <Card>
         <Form onFinish={(form) => onFinish(form, setLoading, history)}>
-          <Form.Item label='Cliente' name={['customer']} rules={[{ required: true }]}>
-            <Select
-              showSearch
-              style={{ width: 200 }}
-              placeholder="Selecciona un cliente"
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-            >
-              {customers.map(p => (
-                <Option value={p._id} key={p._id}>{p.name}</Option>
-              ))}
-            </Select>
-          </Form.Item>
-          {productsToQuote.map((product, i) => (
+          <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+            <Form.Item label='Cliente' name={['customer']} rules={[{ required: true }]}>
+              <Select
+                showSearch
+                style={{ width: 200 }}
+                placeholder="Selecciona un cliente"
+                optionFilterProp="children"
+                value={customer}
+                onChange={onChangeCustomer}
+                filterOption={(input, option) =>
+                  option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+              >
+                {customers.map((p, i) => (
+                  <Option value={i} key={p._id}>{p.name}</Option>
+                ))}
+              </Select>
+            </Form.Item>
+            <Form.Item label="Vendedor">
+              <Input
+                name='seller'
+                value={quote.seller}
+                placeholder='Vendedor'
+                style={{ width: 150 }}
+                onChange={(v) => setQuote({ ...quote, seller: v.target.value })} />
+            </Form.Item>
+            <Form.Item label="Tiempo de entrega">
+              <Input
+                name='deliveryTime'
+                value={quote.deliveryTime}
+                placeholder='Tiempo de entrega'
+                style={{ width: 150 }}
+                onChange={(v) => setQuote({ ...quote, deliveryTime: v.target.value })} />
+            </Form.Item>
+            <Form.Item label="Validez de la propuesta">
+              <Input
+                name='validityPeriod'
+                value={quote.validityPeriod}
+                placeholder='Validez de la propuesta'
+                style={{ width: 150 }}
+                onChange={(v) => setQuote({ ...quote, validityPeriod: v.target.value })} />
+            </Form.Item>
+            <Form.Item label="Forma de pago">
+              <Input
+                name='wayToPay'
+                value={quote.wayToPay}
+                placeholder='Forma de pago'
+                style={{ width: 150 }}
+                onChange={(v) => setQuote({ ...quote, wayToPay: v.target.value })} />
+            </Form.Item>
+          </div>
+          {quote.products.map((product, i) => (
             <Card key={i}>
               <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Form.Item style={{ marginRight: '15px' }} label='Producto' rules={[{ required: true }]}>
@@ -302,6 +424,9 @@ const AddQuote = ({ history }) => {
                     ))}
                   </Select>
                 </Form.Item>
+                {product.product &&
+                  <Button onClick={() => openStock(product.product.sku)}>Ver Stock</Button>
+                }
                 <Button style={{ backgroundColor: '#ff7575' }} onClick={() => deleteProduct(i)}>
                   <DeleteFilled style={{ color: 'white', fontSize: '20px' }} />
                 </Button>
@@ -311,7 +436,7 @@ const AddQuote = ({ history }) => {
                   <Card>
                     <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-around', flexWrap: 'wrap' }}>
                       <Card style={{ marginRight: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                        <img src={`https://catalogospromocionales.com/${product.product.photo}`} style={{ objectFit: 'contain', width: '200px' }} alt={product.product.name} />
+                        <img crossOrigin={null} src={`https://catalogospromocionales.com${product.product.photo}`} style={{ objectFit: 'contain', width: '200px' }} alt={product.product.name} />
                       </Card>
                       <div style={{ width: '230px', display: 'flex', flexDirection: 'column' }}>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -498,7 +623,7 @@ const AddQuote = ({ history }) => {
             </Button>
           </div>
           <Form.Item >
-            <Button type="primary" htmlType="submit" style={{ marginTop: '15px' }}>
+            <Button type="primary" onClick={() => onFinish(quote, setLoading)} style={{ marginTop: '15px' }}>
               Crear cotizacion
             </Button>
           </Form.Item>

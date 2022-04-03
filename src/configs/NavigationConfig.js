@@ -41,8 +41,8 @@ const navigationConfig = (user) => {
     icon: FileOutlined,
     submenu: [
       {
-        key: `${APP_PREFIX_PATH}/quote`,
-        path: `${APP_PREFIX_PATH}/quote`,
+        key: `${APP_PREFIX_PATH}/quotes`,
+        path: `${APP_PREFIX_PATH}/quotes`,
         title: 'Cotizaciones',
         icon: FileOutlined,
         submenu: []

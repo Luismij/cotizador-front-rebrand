@@ -69,11 +69,11 @@ const EditUser = ({ history, match }) => {
     const jwt = localStorage.getItem('jwt')
     const data = new FormData()
     for (const key in filterData) {
-      if (key !== 'logo') {
+      if (key !== 'logo' && key !== 'logo2') {
         const item = filterData[key];
         data.append(key, item)
       } else {
-        data.append(key, form.logo[0].originFileObj)
+        data.append(key, form[key][0].originFileObj)
       }
     }
     try {
@@ -109,8 +109,16 @@ const EditUser = ({ history, match }) => {
         <Form.Item name={['email']} label="Correo" rules={[{ type: 'email' }]}>
           <Input />
         </Form.Item>
-        <Form.Item name={['logo']} label="Logo" valuePropName="logo" getValueFromEvent={uploadHandle} rules={[{ required: true }]}>
+        <Form.Item name={['logo']} label="Logo" valuePropName="logo" getValueFromEvent={uploadHandle} >
           <Upload.Dragger style={{ width: '300px' }} method='get' accept='image/*' name="logo" action="/upload.do" multiple={false} onChange={uploadHandle} onPreview>
+            <p className="ant-upload-drag-icon">
+              <InboxOutlined />
+            </p>
+            <p className="ant-upload-text" style={{ color: 'black' }}>Haz click o arrastra tu logo a esta area</p>
+          </Upload.Dragger>
+        </Form.Item>
+        <Form.Item name={['logo2']} label="Logo2" valuePropName="logo2" getValueFromEvent={uploadHandle} >
+          <Upload.Dragger style={{ width: '300px' }} method='get' accept='image/*' name="logo2" action="/upload.do" multiple={false} onChange={uploadHandle} onPreview>
             <p className="ant-upload-drag-icon">
               <InboxOutlined />
             </p>

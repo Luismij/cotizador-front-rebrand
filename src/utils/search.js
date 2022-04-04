@@ -10,7 +10,14 @@ const searchTextInArray = (list, keys, text) => {
   let newList = []
   for (const item of list) {
     for (const key of keys) {
-      if (reg.test(item[key])) {
+      if (key.indexOf('.') > 0) {
+        const itemAux = item[key.split('.')[0]]
+        const keyAux = key.split('.')[1]
+        if (reg.test(itemAux[keyAux])) {
+          newList.push(item)
+          break
+        }
+      } else if (reg.test(item[key])) {
         newList.push(item)
         break
       }

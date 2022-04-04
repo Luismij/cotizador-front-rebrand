@@ -15,7 +15,7 @@ const onFinish = async (data, setLoading, history) => {
   try {
     const options = {
       url: `${API_BASE_URL}/quote/`,
-      method: 'POST',
+      method: 'PUT',
       data,
       headers: {
         "Content-Type": "application/json",
@@ -23,7 +23,7 @@ const onFinish = async (data, setLoading, history) => {
       }
     }
     await axios.request(options)
-    message.success({content: 'Cotizacion creada'})
+    message.success({ content: 'Cotizacion editada' })
     history.push(`${APP_PREFIX_PATH}/quotes`)
   } catch (error) {
     message.error({ content: 'Something went wrong' })
@@ -52,7 +52,7 @@ const getStock = async (sku) => {
   }
 }
 
-const AddQuote = ({ history }) => {
+const EditQuote = ({ history, match }) => {
   const [loading, setLoading] = useState(true)
   const [customers, setCustomers] = useState([])
   const [customer, setCustomer] = useState(0)
@@ -62,6 +62,7 @@ const AddQuote = ({ history }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [quote, setQuote] = useState({ customer: null, wayToPay: '', validityPeriod: '', deliveryTime: '', seller: '', products: [{ product: null, price: 0, typeOfPrice: 'net', priceDescription: '', freight: 0, profit: 0, markings: [{ netPrice: 0, amount: 0, markingPrice: 0, unitPrice: 0, totalPrice: 0, name: null, ink: null, i: null }], discount: false, observations: '' }] })
   const { user } = useContext(UserContext)
+  const quoteId = match.params.quoteid
 
   useEffect(() => {
     const CancelToken = axios.CancelToken.source();
@@ -79,6 +80,20 @@ const AddQuote = ({ history }) => {
         }
         let res = await axios.request(options)
         setCustomers(res.data)
+      } catch (error) {
+        console.error(error);
+      }
+      try {
+        const options = {
+          url: API_BASE_URL + '/quote/' + quoteId,
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'jwt-token': jwt
+          }
+        }
+        const res = (await axios.request(options)).data
+        setQuote(res)
       } catch (error) {
         console.error(error);
       }
@@ -115,10 +130,10 @@ const AddQuote = ({ history }) => {
       setLoading(false)
     }
     init()
-    return () => CancelToken.cancel('Cancelling in cleanup')
+    return () => CancelToken.cancel('Cancelling in cleanup')// eslint-disable-next-line
   }, [])
 
-  const onChangeCustomer =(i)=>{
+  const onChangeCustomer = (i) => {
     setCustomer(i)
     let aux = { ...quote }
     aux.customer = customers[i]
@@ -626,7 +641,7 @@ const AddQuote = ({ history }) => {
           </div>
           <Form.Item >
             <Button type="primary" onClick={() => onFinish(quote, setLoading, history)} style={{ marginTop: '15px' }}>
-              Crear cotizacion
+              Editar cotizacion
             </Button>
           </Form.Item>
         </Form>
@@ -635,4 +650,4 @@ const AddQuote = ({ history }) => {
   )
 }
 
-export default AddQuote
+export default EditQuote

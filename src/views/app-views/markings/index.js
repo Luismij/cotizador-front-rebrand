@@ -149,7 +149,7 @@ const Markings = ({ history }) => {
 
   const search = (toSearch) => {
     if (toSearch.length > 0) {
-      setMarkings(searchTextInArray(allMarkings, ['name', 'email'], toSearch))
+      setMarkings(searchTextInArray(allMarkings, ['name'], toSearch))
     } else {
       setMarkings(allMarkings)
     }

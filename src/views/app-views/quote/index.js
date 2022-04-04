@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react'
 import { Table, Input, Button, Popconfirm, message } from 'antd'
-import { EditOutlined, DeleteOutlined, DownloadOutlined } from '@ant-design/icons'
+import { EditOutlined, DeleteOutlined, DownloadOutlined, LoadingOutlined } from '@ant-design/icons'
 import { APP_PREFIX_PATH, API_BASE_URL } from 'configs/AppConfig'
 import axios from 'axios'
 import Loading from 'components/shared-components/Loading'
@@ -21,7 +21,8 @@ const toDataURL = url => fetch(url, { mode: 'cors' })
     reader.readAsDataURL(blob)
   }))
 
-const pdfGenerator = async (quote, user) => {
+const pdfGenerator = async (quote, user, setLoading) => {
+  setLoading(true)
   let doc = new jsPDF('p', 'pt', 'letter')
   //HEADER
   try {
@@ -110,19 +111,21 @@ const pdfGenerator = async (quote, user) => {
       aux = aux.replace(/&iacute;/gi, 'í')
       aux = aux.replace(/&oacute;/gi, 'ó')
       aux = aux.replace(/&uacute;/gi, 'ú')
+      aux = aux.replace(/&ntilde;/gi, 'ñ')
+      aux = aux.replace(/&nbsp;/gi, '')
+      aux = aux.replace(/<span[\s\S]*?>|<\/span>/gi, '')
+      
       aux = aux.split('<br />\r\n')
-      let height2 = height + 40
+      let height2 = height + 20
       for (let i = 0; i < aux.length - 1; i++) {
-        const des = aux[i];
-        if (des.length > 50) {
+        let des = aux[i];
+        while (des.length > 45) {
           height2 += 10
-          doc.text(220, height2, des.slice(0, 50))
-          height2 += 10
-          doc.text(220, height2, des.slice(50))
-        } else {
-          height2 += 10
-          doc.text(220, height2, des)
+          doc.text(220, height2, des.slice(0, 45))
+          des = des.replace(des.slice(0, 45), '')
         }
+        height2 += 10
+        doc.text(220, height2, des)
       }
     }
     if (item.markings) {
@@ -142,15 +145,19 @@ const pdfGenerator = async (quote, user) => {
     console.log(item);
     height += 150
   }
-  //getBase64FromImageUrl('https://catalogospromocionales.com/images/productos/251.jpg')
-  //getBase64FromImageUrl('http://localhost:5000/image/6221951d28af79e1dbffa2a8.png')
   doc.save()
+  setLoading(false)
 }
 
 const Actions = (_id, quote, user, deleteQuote, editQuote) => {
+  const [loading, setLoading] = useState(false)
   return (
     <div>
-      <DownloadOutlined onClick={() => pdfGenerator(quote, user)} style={{ fontSize: '25px', marginRight: '15px' }} />
+      {loading ?
+        <LoadingOutlined style={{ fontSize: '25px', marginRight: '15px' }} />
+        :
+        <DownloadOutlined onClick={() => pdfGenerator(quote, user, setLoading)} style={{ fontSize: '25px', marginRight: '15px' }} />
+      }
       <EditOutlined onClick={() => editQuote(_id)} style={{ fontSize: '25px', marginRight: '15px' }} />
       <Popconfirm title="Sure to delete?" onConfirm={() => deleteQuote(_id)}>
         <DeleteOutlined style={{ fontSize: '25px' }} />
@@ -214,6 +221,12 @@ const Quotes = ({ history }) => {
   }
   const columns = [
     {
+      title: 'Numero',
+      dataIndex: 'quoteNumber',
+      key: 'quoteNumber',
+      sorter: (a, b) => antdTableSorter(a, b, 'quoteNumber'),
+    },
+    {
       title: 'Fecha de creacion',
       dataIndex: 'createdAt',
       key: 'createdAt',
@@ -261,7 +274,7 @@ const Quotes = ({ history }) => {
 
   const search = (toSearch) => {
     if (toSearch.length > 0) {
-      setQuotes(searchTextInArray(allQuotes, ['name', 'email'], toSearch))
+      setQuotes(searchTextInArray(allQuotes, ['quoteNumber', 'customer.name', 'seller'], toSearch))
     } else {
       setQuotes(allQuotes)
     }
@@ -275,7 +288,7 @@ const Quotes = ({ history }) => {
     <div>
       <div style={{ flexDirection: 'row', display: 'flex', marginBottom: '20px' }}>
         <Input.Search allowClear placeholder="Search" onSearch={value => search(value)} style={{ marginRight: '4px' }} enterButton />
-        <Button onClick={() => history.push(APP_PREFIX_PATH + '/addquote')} style={{ marginBottom: '20px' }}>Crear cliente</Button>
+        <Button onClick={() => history.push(APP_PREFIX_PATH + '/addquote')} style={{ marginBottom: '20px' }}>Crear cotizacion</Button>
       </div>
       <Table
         onRow={(record, rowIndex) => {

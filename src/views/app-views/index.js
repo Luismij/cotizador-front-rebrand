@@ -26,6 +26,7 @@ export const AppViews = () => {
         <Route path={`${APP_PREFIX_PATH}/editcustomer/:customerid`} component={lazy(() => import(`./customers/editCustomer`))} />
         <Route path={`${APP_PREFIX_PATH}/quotes`} component={lazy(() => import(`./quote`))} />
         <Route path={`${APP_PREFIX_PATH}/addquote`} component={lazy(() => import(`./quote/addQuote`))} />
+        <Route path={`${APP_PREFIX_PATH}/editquote/:quoteid`} component={lazy(() => import(`./quote/editQuote`))} />
         <Route path={`${APP_PREFIX_PATH}/addmarking`} component={lazy(() => import(`./markings/addMarking`))} />
         <Route path={`${APP_PREFIX_PATH}/editmarking/:markingId`} component={lazy(() => import(`./markings/editmarkings`))} />
         <Route path={`${APP_PREFIX_PATH}/markings`} component={lazy(() => import(`./markings`))} />

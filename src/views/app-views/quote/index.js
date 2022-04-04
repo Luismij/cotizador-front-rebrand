@@ -31,7 +31,7 @@ const pdfGenerator = async (quote, user, setLoading) => {
   } catch { }
   try {
     const logo2 = await toDataURL(`${API_BASE_URL}/image/${user.logo2}`)
-    doc.addImage(logo2, 'jpeg', 250, 10, 350, 100);
+    doc.addImage(logo2, 'jpeg', 250, 10, 350, 100);//7:2
   } catch { }
   doc.setFont('Helvetica')
   doc.setFontSize(10)

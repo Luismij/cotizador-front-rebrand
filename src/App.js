@@ -36,6 +36,7 @@ function App() {
           setUser(null)
         }
       } catch (error) {
+        setUser(null)
         console.log(error);
         localStorage.removeItem('jwt')
       }

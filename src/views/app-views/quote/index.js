@@ -114,7 +114,7 @@ const pdfGenerator = async (quote, user, setLoading) => {
       aux = aux.replace(/&ntilde;/gi, 'ñ')
       aux = aux.replace(/&nbsp;/gi, '')
       aux = aux.replace(/<span[\s\S]*?>|<\/span>/gi, '')
-      
+
       aux = aux.split('<br />\r\n')
       let height2 = height + 20
       for (let i = 0; i < aux.length - 1; i++) {
@@ -133,7 +133,13 @@ const pdfGenerator = async (quote, user, setLoading) => {
       for (const mark of item.markings) {
         doc.rect(400, height2, 200, 10)
         doc.setTextColor('#fc6100')
-        if (mark.name) doc.text(505, height2 + 8, mark.name, 'center')
+        if (mark.name) {
+          if (mark.ink?.name) {
+            doc.text(502, height2 + 8, `${mark.name} - ${mark.ink.name}`, 'center')
+          } else doc.text(502, height2 + 8, mark.name, 'center')
+        }
+        else doc.text(502, height2 + 8, 'Sin marcacion', 'center')
+        console.log(mark);
         height2 += 10
         doc.setTextColor('#000')
         doc.text(445, height2 + 8, `${mark.amount}`, 'right')

@@ -36,7 +36,6 @@ const pdfGenerator = async (quote, user, setLoading) => {
   doc.setFont('Helvetica')
   doc.setFontSize(10)
   doc.setTextColor('#00118c')
-  console.log(user.name);
   doc.text(120, 20, user.name)
   doc.text(120, 35, user.businessName)
   doc.text(120, 50, `Cel ${user.phone}`)
@@ -117,7 +116,7 @@ const pdfGenerator = async (quote, user, setLoading) => {
 
       aux = aux.split('<br />\r\n')
       let height2 = height + 20
-      for (let i = 0; i < aux.length - 1; i++) {
+      for (let i = 0; i < aux.length; i++) {
         let des = aux[i];
         while (des.length > 45) {
           height2 += 10
@@ -126,6 +125,21 @@ const pdfGenerator = async (quote, user, setLoading) => {
         }
         height2 += 10
         doc.text(220, height2, des)
+      }
+      height2 += 5
+      aux = item.observations !== '' ? `Observacion: ${item.observations}` : ''
+      aux = aux.split('\n')
+      for (let i = 0; i < aux.length; i++) {
+        let des = aux[i]
+        while (des.length > 45 && (height2 - height) <= 140) {
+          height2 += 10
+          doc.text(220, height2, des.slice(0, 45))
+          des = des.replace(des.slice(0, 45), '')
+        }
+        if ((height2 - height) <= 140) {
+          height2 += 10
+          doc.text(220, height2, des)
+        }
       }
     }
     if (item.markings) {
@@ -139,17 +153,33 @@ const pdfGenerator = async (quote, user, setLoading) => {
           } else doc.text(502, height2 + 8, mark.name, 'center')
         }
         else doc.text(502, height2 + 8, 'Sin marcacion', 'center')
-        console.log(mark);
         height2 += 10
         doc.setTextColor('#000')
         doc.text(445, height2 + 8, `${mark.amount}`, 'right')
-        doc.text(525, height2 + 8, `$ ${mark.unitPrice.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`, 'right')
-        doc.text(595, height2 + 8, `$ ${mark.totalPrice.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`, 'right')
+        if (mark.unitPrice !== null) doc.text(525, height2 + 8, `$ ${mark.unitPrice.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`, 'right')
+        else doc.text(525, height2 + 8, `$ 0`, 'right')
+        if (mark.totalPrice !== null) doc.text(595, height2 + 8, `$ ${mark.totalPrice.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`, 'right')
+        else doc.text(595, height2 + 8, `$ 0`, 'right')
         height2 += 10
+
       }
     }
-    console.log(item);
     height += 150
+  }
+  height += 15
+  doc.setTextColor('#fc6100')
+  doc.setFontSize(10)
+  let aux = quote.generalObservations
+  aux = aux.split('\n')
+  for (let i = 0; i < aux.length; i++) {
+    let des = aux[i];
+    while (des.length > 131) {
+      height += 10
+      doc.text(10, height, des.slice(0, 131))
+      des = des.replace(des.slice(0, 131), '')
+    }
+    height += 10
+    doc.text(10, height, des)
   }
   doc.save()
   setLoading(false)

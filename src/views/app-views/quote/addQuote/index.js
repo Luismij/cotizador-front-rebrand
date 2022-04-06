@@ -23,7 +23,7 @@ const onFinish = async (data, setLoading, history) => {
       }
     }
     await axios.request(options)
-    message.success({content: 'Cotizacion creada'})
+    message.success({ content: 'Cotizacion creada' })
     history.push(`${APP_PREFIX_PATH}/quotes`)
   } catch (error) {
     message.error({ content: 'Something went wrong' })
@@ -60,7 +60,7 @@ const AddQuote = ({ history }) => {
   const [markings, setMarkings] = useState([])
   const [stock, setStock] = useState([])
   const [isOpen, setIsOpen] = useState(false)
-  const [quote, setQuote] = useState({ customer: null, wayToPay: '', validityPeriod: '', deliveryTime: '', seller: '', products: [{ product: null, price: 0, typeOfPrice: 'net', priceDescription: '', freight: 0, profit: 0, markings: [{ netPrice: 0, amount: 0, markingPrice: 0, unitPrice: 0, totalPrice: 0, name: null, ink: null, i: null }], discount: false, observations: '' }] })
+  const [quote, setQuote] = useState({ customer: null, wayToPay: '', validityPeriod: '', deliveryTime: '', seller: '', generalObservations: '', products: [{ product: null, price: 0, typeOfPrice: 'net', priceDescription: '', freight: 0, profit: 0, markings: [{ netPrice: 0, amount: 0, markingPrice: 0, unitPrice: 0, totalPrice: 0, name: null, ink: null, i: null }], discount: false, observations: '' }] })
   const { user } = useContext(UserContext)
 
   useEffect(() => {
@@ -118,7 +118,7 @@ const AddQuote = ({ history }) => {
     return () => CancelToken.cancel('Cancelling in cleanup')
   }, [])
 
-  const onChangeCustomer =(i)=>{
+  const onChangeCustomer = (i) => {
     setCustomer(i)
     let aux = { ...quote }
     aux.customer = customers[i]
@@ -405,6 +405,14 @@ const AddQuote = ({ history }) => {
                 placeholder='Forma de pago'
                 style={{ width: 150 }}
                 onChange={(v) => setQuote({ ...quote, wayToPay: v.target.value })} />
+            </Form.Item>
+            <Form.Item label="Observaciones">
+              <Input.TextArea
+                name='generalObservations'
+                value={quote.generalObservations}
+                placeholder='Observaciones generales'
+                style={{ width: 150 }}
+                onChange={(v) => setQuote({ ...quote, generalObservations: v.target.value })} />
             </Form.Item>
           </div>
           {quote.products.map((product, i) => (

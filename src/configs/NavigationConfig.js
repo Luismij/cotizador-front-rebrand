@@ -4,7 +4,8 @@ import {
   PlusOutlined,
   BgColorsOutlined,
   PercentageOutlined,
-  EditOutlined
+  EditOutlined,
+  RocketOutlined
 } from '@ant-design/icons';
 import { APP_PREFIX_PATH } from 'configs/AppConfig'
 
@@ -57,7 +58,7 @@ const navigationConfig = (user) => {
     ]
   }
 
-  const markingsMenu = 
+  const markingsMenu =
   {
     key: `Marcaciones`,
     title: 'Marcaciones',
@@ -80,7 +81,7 @@ const navigationConfig = (user) => {
     ]
   }
 
-  const discountMenu = 
+  const discountMenu =
   {
     key: `Descuentos`,
     title: 'Descuentos',
@@ -103,10 +104,20 @@ const navigationConfig = (user) => {
     ]
   }
 
+  const productsMenu =
+  {
+    key: `${APP_PREFIX_PATH}/products`,
+    path: `${APP_PREFIX_PATH}/products`,
+    title: 'Productos',
+    icon: RocketOutlined,
+    submenu: []
+  }
+
   menu.push(customerMenu)
   menu.push(quoteMenu)
   menu.push(markingsMenu)
   menu.push(discountMenu)
+  menu.push(productsMenu)
 
   return menu
 }

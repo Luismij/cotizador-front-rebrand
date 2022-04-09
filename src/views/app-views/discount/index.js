@@ -1,11 +1,40 @@
-import React, { useContext } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Table, Button, Card } from 'antd'
-import { APP_PREFIX_PATH } from 'configs/AppConfig'
-import { UserContext } from 'contexts/UserContext';
+import { APP_PREFIX_PATH, API_BASE_URL } from 'configs/AppConfig'
+import Loading from 'components/shared-components/Loading'
+import axios from 'axios'
 
 const Discounts = ({ history }) => {
-  const { user } = useContext(UserContext)
-  const { discount } = user
+  const [discount, setDiscount] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const init = async () => {
+      try {
+        const jwt = localStorage.getItem('jwt')
+        const options = {
+          url: API_BASE_URL + '/discount/',
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'jwt-token': jwt
+          },
+          signal: controller.signal
+        }
+        const res = (await axios.request(options)).data
+        setDiscount(res)
+      } catch (error) {
+        console.log(error);
+      }
+      setLoading(false)
+    }
+    init()
+    return () => {
+      controller.abort()
+    }
+  }, [])
+
 
   const columns = [
     {
@@ -31,6 +60,10 @@ const Discounts = ({ history }) => {
     },
   ]
 
+  if (loading) return (
+    <Loading cover="content" />
+  )
+
   return (
     <div>
       <Card>
@@ -39,14 +72,14 @@ const Discounts = ({ history }) => {
             <h4 style={{ marginRight: '10px' }}>Descuento fuera de rango: </h4>
             <p><b>{discount.outOfRangeDiscount}%</b></p>
           </div>
-          <div style={{ flexDirection: 'row', display: 'flex'}}>
+          <div style={{ flexDirection: 'row', display: 'flex' }}>
             <Button onClick={() => history.push(APP_PREFIX_PATH + '/editdiscount')} >Editar descuento</Button>
           </div>
         </div>
       </Card>
       <Table
         columns={columns}
-        dataSource={discount.ranges}
+        dataSource={discount ? discount.ranges : []}
         rowKey="_id"
       />
     </div>

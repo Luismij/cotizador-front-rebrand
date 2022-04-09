@@ -35,7 +35,7 @@ const pdfGenerator = async (quote, user, setLoading) => {
   } catch { }
   doc.setFont('Helvetica')
   doc.setFontSize(10)
-  doc.setTextColor('#00118c')
+  doc.setTextColor('#000b57')
   doc.text(120, 20, user.name)
   doc.text(120, 35, user.businessName)
   doc.text(120, 50, `Cel ${user.phone}`)
@@ -79,7 +79,7 @@ const pdfGenerator = async (quote, user, setLoading) => {
   doc.rect(400, 200, 50, 20)
   doc.rect(450, 200, 80, 20)
   doc.rect(530, 200, 70, 20)
-  doc.setTextColor('#00118c')
+  doc.setTextColor('#000b57')
   doc.setFont('Helvetica', 'bold')
   doc.text(85, 212, 'IMAGEN')
   doc.text(280, 212, 'DESCRIPCIÓN')
@@ -156,9 +156,9 @@ const pdfGenerator = async (quote, user, setLoading) => {
         height2 += 10
         doc.setTextColor('#000')
         doc.text(445, height2 + 8, `${mark.amount}`, 'right')
-        if (mark.unitPrice !== null) doc.text(525, height2 + 8, `$ ${mark.unitPrice.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`, 'right')
+        if (mark.unitPrice !== null) doc.text(525, height2 + 8, `$ ${parseInt(mark.unitPrice).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`, 'right')
         else doc.text(525, height2 + 8, `$ 0`, 'right')
-        if (mark.totalPrice !== null) doc.text(595, height2 + 8, `$ ${mark.totalPrice.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`, 'right')
+        if (mark.totalPrice !== null) doc.text(595, height2 + 8, `$ ${parseInt(mark.totalPrice).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`, 'right')
         else doc.text(595, height2 + 8, `$ 0`, 'right')
         height2 += 10
 

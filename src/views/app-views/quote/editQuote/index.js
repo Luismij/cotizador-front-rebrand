@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useContext } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Select, Card, Form, Button, Input, Modal, Divider, Checkbox, message, Table } from 'antd';
 import { DeleteFilled } from '@ant-design/icons';
 import { APP_PREFIX_PATH, API_BASE_URL } from 'configs/AppConfig'
 import Loading from 'components/shared-components/Loading'
 import axios from 'axios'
-import { UserContext } from 'contexts/UserContext';
 
 const { Option } = Select;
 
@@ -61,7 +60,8 @@ const EditQuote = ({ history, match }) => {
   const [stock, setStock] = useState([])
   const [isOpen, setIsOpen] = useState(false)
   const [quote, setQuote] = useState({ customer: null, wayToPay: '', validityPeriod: '', deliveryTime: '', seller: '', generalObservations: '', products: [{ product: null, price: 0, typeOfPrice: 'net', priceDescription: '', freight: 0, profit: 0, markings: [{ netPrice: 0, amount: 0, markingPrice: 0, unitPrice: 0, totalPrice: 0, name: null, ink: null, i: null }], discount: false, observations: '' }] })
-  const { user } = useContext(UserContext)
+  const [discount, setDiscount] = useState(null)
+
   const quoteId = match.params.quoteid
 
   useEffect(() => {
@@ -70,7 +70,7 @@ const EditQuote = ({ history, match }) => {
       const jwt = localStorage.getItem('jwt')
       // Get the list of customers
       try {
-        let options = {
+        const options = {
           url: API_BASE_URL + '/customer/',
           method: 'GET',
           headers: {
@@ -78,7 +78,7 @@ const EditQuote = ({ history, match }) => {
             'jwt-token': jwt
           }
         }
-        let res = await axios.request(options)
+        const res = await axios.request(options)
         setCustomers(res.data)
       } catch (error) {
         console.error(error);
@@ -99,7 +99,7 @@ const EditQuote = ({ history, match }) => {
       }
       // Get the list of products
       try {
-        let options = {
+        const options = {
           url: API_BASE_URL + '/product/',
           method: 'GET',
           headers: {
@@ -107,14 +107,14 @@ const EditQuote = ({ history, match }) => {
             'jwt-token': jwt
           }
         }
-        let res = await axios.request(options)
+        const res = await axios.request(options)
         setProducts(res.data)
       } catch (error) {
         console.error(error);
       }
       // Get the list of markings
       try {
-        let options = {
+        const options = {
           url: API_BASE_URL + '/marking/',
           method: 'GET',
           headers: {
@@ -122,8 +122,23 @@ const EditQuote = ({ history, match }) => {
             'jwt-token': jwt
           }
         }
-        let res = await axios.request(options)
+        const res = await axios.request(options)
         setMarkings(res.data)
+      } catch (error) {
+        console.error(error);
+      }
+      // Get discounts
+      try {
+        const options = {
+          url: API_BASE_URL + '/discount/',
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'jwt-token': jwt
+          }
+        }
+        const res = (await axios.request(options)).data
+        setDiscount(res)
       } catch (error) {
         console.error(error);
       }
@@ -140,7 +155,7 @@ const EditQuote = ({ history, match }) => {
     setQuote(aux)
   }
 
-  const calculatePrices = (product) => {
+  const calculatePrices = (product, isMark) => {
     product.markings.forEach((mark, j) => {
       switch (product.typeOfPrice) {
         case 'net':
@@ -151,9 +166,9 @@ const EditQuote = ({ history, match }) => {
           break;
         case 'full':
           mark.netPrice = product.price * 0.6
-          if (product.discount && user.discount && user.discount.ranges.length > 0) {
+          if (product.discount && discount && discount.ranges.length > 0) {
             let inRange = false
-            for (const range of user.discount.ranges) {
+            for (const range of discount.ranges) {
               if (mark.amount * mark.netPrice >= range.min && mark.amount * mark.netPrice <= range.max) {
                 mark.netPrice = (product.price * 0.6) * ((100 - range.discount) / 100)
                 inRange = true
@@ -161,7 +176,7 @@ const EditQuote = ({ history, match }) => {
               } else if (mark.amount * mark.netPrice < range.min) inRange = true
             }
             if (!inRange) {
-              mark.netPrice = (product.price * 0.6) * ((100 - user.discount.outOfRangeDiscount) / 100)
+              mark.netPrice = (product.price * 0.6) * ((100 - discount.outOfRangeDiscount) / 100)
             }
           }
           break;
@@ -187,10 +202,10 @@ const EditQuote = ({ history, match }) => {
         }
       }
       if (sum > 0) {
-        product.markings[j].markingPrice = sum / mark.amount
+        if (!isMark) product.markings[j].markingPrice = sum / mark.amount
       } else product.markings[j].markingPrice = 0
-      product.markings[j].unitPrice = (parseFloat(mark.netPrice) + parseFloat(product.markings[j].markingPrice) + parseFloat(product.freight)) / (product.profit > 0 ? ((100 - product.profit) / 100) : 1)
-      product.markings[j].totalPrice = product.markings[j].unitPrice * mark.amount
+      product.markings[j].unitPrice = parseInt((parseInt(mark.netPrice) + parseInt(product.markings[j].markingPrice) + parseInt(product.freight)) / (product.profit > 0 ? ((100 - product.profit) / 100) : 1))
+      product.markings[j].totalPrice = parseInt(product.markings[j].unitPrice * mark.amount)
     });
     return product
   }
@@ -239,12 +254,8 @@ const EditQuote = ({ history, match }) => {
     if (!(value.match(/^\d+\.\d+$/) || value.match(/^\d+$/)) && value !== '') return
     if (value < 0) return
     let aux = { ...quote }
-    if (v.target.name === 'amount') {
-      aux.products[i].markings[j][v.target.name] = value !== '' ? parseInt(value) : 0
-    } else {
-      aux.products[i].markings[j][v.target.name] = value !== '' ? parseFloat(value).toFixed(2) : 0
-    }
-    if (v.target.name !== 'totalPrice' || v.target.name === 'amount') aux.products[i] = calculatePrices(aux.products[i])
+    aux.products[i].markings[j][v.target.name] = value !== '' ? parseInt(value) : 0
+    if (v.target.name !== 'totalPrice') aux.products[i] = calculatePrices(aux.products[i], v.target.name === 'markingPrice')
     setQuote(aux)
   }
 
@@ -596,7 +607,7 @@ const EditQuote = ({ history, match }) => {
                               <Form.Item label="Precio Neto" style={{ width: 100, marginRight: '15px' }} rules={[{ required: true }]}>
                                 <Input
                                   prefix='$'
-                                  value={Number.parseFloat(m.netPrice).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                  value={Number.parseInt(m.netPrice).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                                   placeholder='Precio neto'
                                   style={{ width: 110 }}
                                 />
@@ -605,7 +616,7 @@ const EditQuote = ({ history, match }) => {
                                 <Input
                                   prefix='$'
                                   name='markingPrice'
-                                  value={Number.parseFloat(m.markingPrice).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                  value={Number.parseInt(m.markingPrice).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                                   placeholder='Precio de marcacion'
                                   style={{ width: 110 }}
                                   onChange={(v) => onChangeHandlerMark(v, i, j)} />
@@ -614,7 +625,7 @@ const EditQuote = ({ history, match }) => {
                                 <Input
                                   prefix='$'
                                   name='unitPrice'
-                                  value={Number.parseFloat(m.unitPrice).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                  value={Number.parseInt(m.unitPrice).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                                   placeholder='Precio unitario'
                                   style={{ width: 110 }}
                                   onChange={(v) => onChangeHandlerMark(v, i, j)} />
@@ -623,7 +634,7 @@ const EditQuote = ({ history, match }) => {
                                 <Input
                                   prefix='$'
                                   name='totalPrice'
-                                  value={Number.parseFloat(m.totalPrice).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                  value={Number.parseInt(m.totalPrice).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                                   placeholder='Precio Total'
                                   style={{ width: 130 }}
                                   onChange={(v) => onChangeHandlerMark(v, i, j)} />

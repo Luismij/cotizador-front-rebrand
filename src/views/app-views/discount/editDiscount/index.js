@@ -1,15 +1,40 @@
-import React, { useState, useContext } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Input, Button, Card, message } from 'antd'
 import { APP_PREFIX_PATH, API_BASE_URL } from 'configs/AppConfig'
 import axios from 'axios'
 import Loading from 'components/shared-components/Loading'
-import { UserContext } from 'contexts/UserContext';
 import { DeleteFilled } from '@ant-design/icons';
 
 const EditDiscounts = ({ history }) => {
-  const [loading, setLoading] = useState(false)
-  const { user, setUser } = useContext(UserContext)
-  const [discount, setDiscount] = useState(user.discount)
+  const [loading, setLoading] = useState(true)
+  const [discount, setDiscount] = useState({})
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const init = async () => {
+      try {
+        const jwt = localStorage.getItem('jwt')
+        const options = {
+          url: API_BASE_URL + '/discount/',
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'jwt-token': jwt
+          },
+          signal: controller.signal
+        }
+        const res = (await axios.request(options)).data
+        setDiscount(res)
+      } catch (error) {
+        console.log(error);
+      }
+      setLoading(false)
+    }
+    init()
+    return () => {
+      controller.abort()
+    }
+  }, [])
 
   const addRange = () => {
     let aux = { ...discount }
@@ -39,15 +64,14 @@ const EditDiscounts = ({ history }) => {
       const options = {
         method: 'PUT',
         data: discount,
-        url: `${API_BASE_URL}/user/discount`,
+        url: `${API_BASE_URL}/discount`,
         headers: {
           'Content-Type': 'application/json',
           'jwt-token': jwt
         }
       }
-      const res = (await axios.request(options)).data
+      await axios.request(options)
       message.success({ content: 'Editado exitosamente' })
-      setUser(res)
       history.push(APP_PREFIX_PATH + '/discount')
     } catch (error) {
       message.error({ content: 'Hubo un error' })

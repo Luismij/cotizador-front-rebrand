@@ -27,6 +27,11 @@ const expandedRowRender = ({ inks, ranges }) => {
       title: 'Tintas',
       children: [
         {
+          title: 'Nombre tinta',
+          dataIndex: 'name',
+          key: 'name',
+        },
+        {
           title: 'Precio Minimo',
           dataIndex: 'minTotalPrice',
           key: 'minTotalPrice',

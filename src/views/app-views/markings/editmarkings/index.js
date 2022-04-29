@@ -194,7 +194,7 @@ const AddMarking = ({ history, match }) => {
         </div>
         <Form.Item >
           <Button type="primary" htmlType="submit">
-            Editar
+            Guardar
           </Button>
           <Button type="ghost" onClick={() => history.push(APP_PREFIX_PATH + '/markings')} style={{ marginLeft: '15px' }}>
             Volver

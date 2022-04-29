@@ -52,8 +52,8 @@ const pdfGenerator = async (quote, user, setLoading) => {
   doc.text(15, 175, 'CONTACTO:')
   doc.text(15, 190, 'TELEFONO:')
   doc.text(220, 145, 'CIUDAD:')
-  doc.text(220, 160, 'E-MAIL:')
-  doc.text(220, 175, 'CARGO:')
+  doc.text(220, 160, 'NIT:')
+  doc.text(220, 175, 'E-MAIL:')
   doc.text(220, 190, 'VENDEDOR:')
   doc.text(425, 160, 'TIEMPO DE ENTREGA:')
   doc.text(425, 175, 'VALIDEZ DE LA PROPUESTA:')
@@ -67,8 +67,8 @@ const pdfGenerator = async (quote, user, setLoading) => {
   if (quote.customer.name) doc.text(70, 175, quote.customer.name.toUpperCase())
   if (quote.customer.phone) doc.text(70, 190, quote.customer.phone.toString().toUpperCase())
   if (quote.customer.address) doc.text(270, 145, quote.customer.address.toString().toUpperCase())
-  if (quote.customer.email) doc.text(270, 160, quote.customer.email.toString().toUpperCase())
-  if (quote.customer.businessName) doc.text(270, 175, quote.customer.businessName.toString().toUpperCase())
+  if (quote.customer.businessName) doc.text(270, 160, quote.customer.nit.toString().toUpperCase())
+  if (quote.customer.email) doc.text(270, 175, quote.customer.email.toString().toUpperCase())
   if (quote.seller) doc.text(270, 190, quote.seller.toString().toUpperCase())
   if (quote.deliveryTime) doc.text(545, 160, quote.deliveryTime.toString().toUpperCase())
   if (quote.validityPeriod) doc.text(545, 175, quote.validityPeriod.toString().toUpperCase())
@@ -116,6 +116,7 @@ const pdfGenerator = async (quote, user, setLoading) => {
 
       aux = aux.split('<br />\r\n')
       let height2 = height + 20
+      doc.setTextColor('#ff0000')
       for (let i = 0; i < aux.length; i++) {
         let des = aux[i];
         while (des.length > 45) {
@@ -126,6 +127,7 @@ const pdfGenerator = async (quote, user, setLoading) => {
         height2 += 10
         doc.text(220, height2, des)
       }
+      doc.setTextColor('#000000')
       height2 += 5
       aux = item.observations !== '' ? `Observacion: ${item.observations}` : ''
       aux = aux.split('\n')

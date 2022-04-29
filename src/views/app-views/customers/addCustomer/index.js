@@ -66,7 +66,7 @@ const AddCustomer = ({ history }) => {
         <Form.Item name={['logo']} label="URL Logo" >
           <Input />
         </Form.Item>
-        <Form.Item name={['address']} label="Direccion" >
+        <Form.Item name={['address']} label="Ciudad" >
           <Input />
         </Form.Item>
         <Form.Item name={['businessName']} label="Razon social" >

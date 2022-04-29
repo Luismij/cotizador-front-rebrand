@@ -327,6 +327,11 @@ const AddQuote = ({ history }) => {
       key: 'color',
     },
     {
+      title: 'Total Disponible',
+      dataIndex: 'totalDisponible',
+      key: 'totalDisponible',
+    },
+    {
       title: 'Estado de la orden',
       dataIndex: 'estadoOrden',
       key: 'estadoOrden',
@@ -335,11 +340,6 @@ const AddQuote = ({ history }) => {
       title: 'Llegada Bodega Local',
       dataIndex: 'llegadaBodegaLocal',
       key: 'llegadaBodegaLocal',
-    },
-    {
-      title: 'Total Disponible',
-      dataIndex: 'totalDisponible',
-      key: 'totalDisponible',
     },
   ]
 
@@ -487,7 +487,7 @@ const AddQuote = ({ history }) => {
                         </Form.Item>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                           <p style={{ marginRight: '10px', marginBottom: '0px', fontWeight: '900' }}>Descripcion del precio:</p>
-                          <p style={{ marginRight: '10px', marginBottom: '0px', fontWeight: '300' }}>{product.priceDescription}</p>
+                          <p style={{ marginRight: '10px', marginBottom: '0px', fontWeight: '700', color: 'red' }}>{product.priceDescription}</p>
                         </div>
                         <Form.Item style={{ marginRight: '15px', marginBottom: '5px' }} label='Tipo' rules={[{ required: true }]}>
                           <Select
@@ -628,7 +628,7 @@ const AddQuote = ({ history }) => {
                           </div>
                         ))}
                         <Button onClick={() => addMarking(i)}>
-                          Agregar Marcación
+                          Agregar escala
                         </Button>
                       </div>
                     </div>

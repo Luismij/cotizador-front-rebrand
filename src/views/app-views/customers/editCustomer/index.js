@@ -100,7 +100,7 @@ const EditCustomer = ({ history, match }) => {
         <Form.Item name={['logo']} label="URL Logo" >
           <Input />
         </Form.Item>
-        <Form.Item name={['address']} label="Direccion" >
+        <Form.Item name={['address']} label="Ciudad" >
           <Input />
         </Form.Item>
         <Form.Item name={['businessName']} label="Razon social" >
@@ -111,7 +111,7 @@ const EditCustomer = ({ history, match }) => {
         </Form.Item>
         <Form.Item wrapperCol={{ ...layout.wrapperCol, offset: 4 }}>
           <Button type="primary" htmlType="submit">
-            Editar
+            Guardar
           </Button>
           <Button type="ghost" onClick={() => history.push(APP_PREFIX_PATH + '/customers')} style={{ marginLeft: '15px' }}>
             Volver

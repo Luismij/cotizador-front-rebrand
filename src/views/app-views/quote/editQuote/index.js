@@ -383,7 +383,7 @@ const EditQuote = ({ history, match }) => {
       <Card>
         <Form onFinish={(form) => onFinish(form, setLoading, history)}>
           <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-            <Form.Item label='Cliente' name={['customer']} rules={[{ required: true }]}>
+            <Form.Item label='Cliente' name={['customer']} rules={[{ required: true }]} initialValue={customer}>
               <Select
                 showSearch
                 style={{ width: 200 }}
@@ -503,7 +503,7 @@ const EditQuote = ({ history, match }) => {
                         </Form.Item>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                           <p style={{ marginRight: '10px', marginBottom: '0px', fontWeight: '900' }}>Descripcion del precio:</p>
-                          <p style={{ marginRight: '10px', marginBottom: '0px', fontWeight: '300' }}>{product.priceDescription}</p>
+                          <p style={{ marginRight: '10px', marginBottom: '0px', fontWeight: '700', color: 'red' }}>{product.priceDescription}</p>
                         </div>
                         <Form.Item style={{ marginRight: '15px', marginBottom: '5px' }} label='Tipo' rules={[{ required: true }]}>
                           <Select
@@ -557,13 +557,14 @@ const EditQuote = ({ history, match }) => {
                         {product.markings.map((m, j) => (
                           <div key={`marking ${i}-${j}`}>
                             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                              <Form.Item label='Marcacion' style={{ marginBottom: '0px' }} rules={[{ required: true }]}>
+                              <Form.Item label='Marcacion' style={{ marginBottom: '0px' }} rules={[{ required: true }]} initialValue={markings.findIndex(item => item.name === m.name) === m.i ? m.i : null}>
                                 <Select
                                   showSearch
                                   style={{ width: 160 }}
                                   placeholder="Selecciona una marcación"
                                   onChange={(k) => onChangeMarking(i, j, k)}
                                   optionFilterProp="children"
+                                  value={markings.findIndex(item => item.name === m.name) === m.i ? m.i : null}
                                   filterOption={(input, option) =>
                                     option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                                   }
@@ -574,11 +575,12 @@ const EditQuote = ({ history, match }) => {
                                 </Select>
                               </Form.Item>
                               {m.name && markings[m.i].inks.length > 0 &&
-                                <Form.Item label='Tintas' style={{ marginBottom: '0px' }} rules={[{ required: true }]}>
+                                <Form.Item label='Tintas' style={{ marginBottom: '0px' }} rules={[{ required: true }]} initialValue={markings[m.i].inks.findIndex(item => item?._id === m.ink?._id) >= 0 ? markings[m.i].inks.indexOf(m.ink) : null}>
                                   <Select
                                     showSearch
                                     style={{ width: 160 }}
                                     placeholder="Tintas"
+                                    value={markings[m.i].inks.findIndex(item => item?._id === m.ink?._id) >= 0 ? markings[m.i].inks.findIndex(item => item._id === m.ink._id) : null}
                                     onChange={(k) => onChangeInk(i, j, k)}
                                     optionFilterProp="children"
                                     filterOption={(input, option) =>
@@ -644,7 +646,7 @@ const EditQuote = ({ history, match }) => {
                           </div>
                         ))}
                         <Button onClick={() => addMarking(i)}>
-                          Agregar Marcación
+                          Agregar escala
                         </Button>
                       </div>
                     </div>
@@ -660,7 +662,7 @@ const EditQuote = ({ history, match }) => {
           </div>
           <Form.Item >
             <Button type="primary" onClick={() => onFinish(quote, setLoading, history)} style={{ marginTop: '15px' }}>
-              Editar cotizacion
+              Guardar
             </Button>
           </Form.Item>
         </Form>

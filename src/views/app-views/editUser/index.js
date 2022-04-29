@@ -142,7 +142,7 @@ const EditUser = ({ history, match }) => {
         </Form.Item>
         <Form.Item wrapperCol={{ ...layout.wrapperCol, offset: 4 }}>
           <Button type="primary" htmlType="submit">
-            Editar
+            Guardar
           </Button>
           <Button type="ghost" onClick={() => history.push(APP_PREFIX_PATH + '/users')} style={{ marginLeft: '15px' }}>
             Volver

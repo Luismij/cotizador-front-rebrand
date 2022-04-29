@@ -128,7 +128,7 @@ const EditDiscounts = ({ history }) => {
         </Button>
       </Card>
       <Button type='primary' onClick={edit} style={{ marginTop: '10px' }}>
-        Editar
+        Guardar
       </Button>
     </div>
   )

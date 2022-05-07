@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Form, Input, InputNumber, Upload, Button, Card, message } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 import { APP_PREFIX_PATH, API_BASE_URL } from 'configs/AppConfig'
 import axios from 'axios'
 import Loading from 'components/shared-components/Loading'
+import ColorPicker from 'components/shared-components/ColorPicker'
 
 const layout = {
   labelCol: { span: 4 },
@@ -37,6 +38,7 @@ Object.filter = (obj, predicate) =>
 const EditUser = ({ history, match }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const form = useRef(null)
 
   useEffect(() => {
     const init = async () => {
@@ -96,13 +98,20 @@ const EditUser = ({ history, match }) => {
     }
   }
 
+  const setForm = (v, input) => {
+    setUser({ ...user, [input]: v.hex })
+    form.current.setFieldsValue({
+      [input]: v.hex
+    })
+  }
+
   if (loading) return (
     <Loading cover="content" />
   )
 
   return (
     <Card>
-      <Form {...layout} name="add-user" onFinish={onFinish} validateMessages={validateMessages} initialValues={{ ...user }}>
+      <Form {...layout} name="add-user" onFinish={onFinish} validateMessages={validateMessages} initialValues={{ ...user }} ref={form}>
         <Form.Item name={['name']} label="Nombre" rules={[{ required: true }]}>
           <Input />
         </Form.Item>
@@ -139,6 +148,12 @@ const EditUser = ({ history, match }) => {
         </Form.Item>
         <Form.Item name={['nit']} label="NIT" >
           <InputNumber style={{ width: '200px' }} />
+        </Form.Item>
+        <Form.Item name={['mainColor']} label="Color principal" >
+          <ColorPicker colorChange={(v) => setForm(v, 'mainColor')} color={user.mainColor} />
+        </Form.Item>
+        <Form.Item name={['secondaryColor']} label="Color secundario" >
+          <ColorPicker colorChange={(v) => setForm(v, 'secondaryColor')} color={user.secondaryColor}/>
         </Form.Item>
         <Form.Item wrapperCol={{ ...layout.wrapperCol, offset: 4 }}>
           <Button type="primary" htmlType="submit">

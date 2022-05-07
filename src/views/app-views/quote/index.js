@@ -35,7 +35,8 @@ const pdfGenerator = async (quote, user, setLoading) => {
   } catch { }
   doc.setFont('Helvetica')
   doc.setFontSize(10)
-  doc.setTextColor('#000b57')
+  if (user.mainColor) doc.setTextColor(user.mainColor)
+  else doc.setTextColor('#000b57')
   doc.text(120, 20, user.name)
   doc.text(120, 35, user.businessName)
   doc.text(120, 50, `Cel ${user.phone}`)
@@ -58,7 +59,8 @@ const pdfGenerator = async (quote, user, setLoading) => {
   doc.text(425, 160, 'TIEMPO DE ENTREGA:')
   doc.text(425, 175, 'VALIDEZ DE LA PROPUESTA:')
   doc.text(425, 190, 'FORMA DE PAGO:')
-  doc.setTextColor('#fc6100')
+  if (user.secondaryColor) doc.setTextColor(user.secondaryColor)
+  else doc.setTextColor('#fc6100')
   doc.text(425, 145, `COTIZACION No.${quote.quoteNumber}`)
   doc.setFont('Helvetica', 'normal')
   doc.setTextColor('#000')
@@ -79,7 +81,8 @@ const pdfGenerator = async (quote, user, setLoading) => {
   doc.rect(400, 200, 50, 20)
   doc.rect(450, 200, 80, 20)
   doc.rect(530, 200, 70, 20)
-  doc.setTextColor('#000b57')
+  if (user.mainColor) doc.setTextColor(user.mainColor)
+  else doc.setTextColor('#000b57')
   doc.setFont('Helvetica', 'bold')
   doc.text(85, 212, 'IMAGEN')
   doc.text(280, 212, 'DESCRIPCIÓN')
@@ -116,7 +119,6 @@ const pdfGenerator = async (quote, user, setLoading) => {
 
       aux = aux.split('<br />\r\n')
       let height2 = height + 20
-      doc.setTextColor('#ff0000')
       for (let i = 0; i < aux.length; i++) {
         let des = aux[i];
         while (des.length > 45) {
@@ -127,7 +129,7 @@ const pdfGenerator = async (quote, user, setLoading) => {
         height2 += 10
         doc.text(220, height2, des)
       }
-      doc.setTextColor('#000000')
+      doc.setTextColor('#ff0000')
       height2 += 5
       aux = item.observations !== '' ? `Observacion: ${item.observations}` : ''
       aux = aux.split('\n')
@@ -144,11 +146,13 @@ const pdfGenerator = async (quote, user, setLoading) => {
         }
       }
     }
+    doc.setTextColor('#000000')
     if (item.markings) {
       let height2 = height
       for (const mark of item.markings) {
         doc.rect(400, height2, 200, 10)
-        doc.setTextColor('#fc6100')
+        if (user.secondaryColor) doc.setTextColor(user.secondaryColor)
+        else doc.setTextColor('#fc6100')
         if (mark.name) {
           if (mark.ink?.name) {
             doc.text(502, height2 + 8, `${mark.name} - ${mark.ink.name}`, 'center')
@@ -169,7 +173,8 @@ const pdfGenerator = async (quote, user, setLoading) => {
     height += 150
   }
   height += 15
-  doc.setTextColor('#fc6100')
+  if (user.secondaryColor) doc.setTextColor(user.secondaryColor)
+  else doc.setTextColor('#fc6100')
   doc.setFontSize(10)
   let aux = quote.generalObservations
   aux = aux.split('\n')
@@ -189,6 +194,7 @@ const pdfGenerator = async (quote, user, setLoading) => {
 
 const Actions = (_id, quote, user, deleteQuote, editQuote) => {
   const [loading, setLoading] = useState(false)
+
   return (
     <div>
       {loading ?

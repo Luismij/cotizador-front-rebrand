@@ -59,7 +59,7 @@ const EditQuote = ({ history, match }) => {
   const [markings, setMarkings] = useState([])
   const [stock, setStock] = useState([])
   const [isOpen, setIsOpen] = useState(false)
-  const [quote, setQuote] = useState({ customer: null, wayToPay: '', validityPeriod: '', deliveryTime: '', seller: '', generalObservations: '', products: [{ product: null, price: 0, typeOfPrice: 'net', priceDescription: '', freight: 0, profit: 0, markings: [{ netPrice: 0, amount: 0, markingPrice: 0, unitPrice: 0, totalPrice: 0, name: null, ink: null, i: null }], discount: false, observations: '' }] })
+  const [quote, setQuote] = useState({ customer: null, wayToPay: '', validityPeriod: '', deliveryTime: '', seller: '', generalObservations: '', products: [{ product: null, price: 0, typeOfPrice: 'net', priceDescription: '', markings: [{ freight: 0, profit: 0, netPrice: 0, amount: 0, markingPrice: 0, unitPrice: 0, totalPrice: 0, name: null, ink: null, i: null }], discount: false, observations: '' }] })
   const [discount, setDiscount] = useState(null)
 
   const quoteId = match.params.quoteid
@@ -204,7 +204,7 @@ const EditQuote = ({ history, match }) => {
       if (sum > 0) {
         if (!isMark) product.markings[j].markingPrice = sum / mark.amount
       } else product.markings[j].markingPrice = 0
-      product.markings[j].unitPrice = parseInt((parseInt(mark.netPrice) + parseInt(product.markings[j].markingPrice) + parseInt(product.freight)) / (product.profit > 0 ? ((100 - product.profit) / 100) : 1))
+      product.markings[j].unitPrice = parseInt((parseInt(mark.netPrice) + parseInt(product.markings[j].markingPrice) + parseInt(product.markings[j].freight)) / (product.markings[j].profit > 0 ? ((100 - product.markings[j].profit) / 100) : 1))
       product.markings[j].totalPrice = parseInt(product.markings[j].unitPrice * mark.amount)
     });
     return product
@@ -218,7 +218,7 @@ const EditQuote = ({ history, match }) => {
 
   const addProduct = () => {
     let aux = { ...quote }
-    aux.products.push({ product: null, price: 0, typeOfPrice: 'net', priceDescription: '', freight: 0, profit: 0, markings: [{ netPrice: 0, amount: 0, markingPrice: 0, unitPrice: 0, totalPrice: 0, name: null, ink: null, i: null }], discount: false, observations: '' })
+    aux.products.push({ product: null, price: 0, typeOfPrice: 'net', priceDescription: '', freight: 0, profit: 0, markings: [{ freight: 0, profit: 0, netPrice: 0, amount: 0, markingPrice: 0, unitPrice: 0, totalPrice: 0, name: null, ink: null, i: null }], discount: false, observations: '' })
     setQuote(aux)
   }
 
@@ -239,16 +239,6 @@ const EditQuote = ({ history, match }) => {
     setQuote(aux)
   }
 
-  const onChangeHandler = (v, i) => {
-    const value = v.target.value.toString().replace(/\$\s?|(,*)/g, '')
-    if (!value.match(/^-?\d+$/) && value !== '') return
-    if (value < 0) return
-    let aux = { ...quote }
-    aux.products[i][v.target.name] = value !== '' ? parseInt(value) : 0
-    aux.products[i] = calculatePrices(aux.products[i])
-    setQuote(aux)
-  }
-
   const onChangeHandlerMark = (v, i, j) => {
     const value = v.target.value.toString().replace(/\$\s?|(,*)/g, '')
     if (!(value.match(/^\d+\.\d+$/) || value.match(/^\d+$/)) && value !== '') return
@@ -261,7 +251,7 @@ const EditQuote = ({ history, match }) => {
 
   const addMarking = (i) => {
     let aux = { ...quote }
-    aux.products[i].markings.push({ netPrice: 0, amount: 0, markingPrice: 0, unitPrice: 0, totalPrice: 0, name: null, ink: null, i: null })
+    aux.products[i].markings.push({ freight: 0, profit: 0, netPrice: 0, amount: 0, markingPrice: 0, unitPrice: 0, totalPrice: 0, name: null, ink: null, i: null })
     setQuote(aux)
   }
 
@@ -533,27 +523,6 @@ const EditQuote = ({ history, match }) => {
                         </Form.Item>
                       </div>
                       <div style={{ minWidth: '550px', display: 'flex', flexDirection: 'column' }}>
-                        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <Form.Item label="Flete" style={{ width: 100, marginRight: '15px', marginBottom: '0px' }} rules={[{ required: true }]}>
-                            <Input
-                              prefix='$'
-                              name='freight'
-                              value={product.freight.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                              placeholder='Flete'
-                              style={{ width: 100 }}
-                              onChange={(v) => onChangeHandler(v, i)} />
-                          </Form.Item>
-                          <Form.Item label="Utilidad %" style={{ width: 70, marginRight: '15px', marginBottom: '0px' }} rules={[{ required: true }]}>
-                            <Input
-                              suffix='%'
-                              name='profit'
-                              value={product.profit.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                              placeholder='Utilidad'
-                              style={{ width: 70 }}
-                              onChange={(v) => onChangeHandler(v, i)} />
-                          </Form.Item>
-                        </div>
-                        <Divider style={{ margin: '15px' }} />
                         {product.markings.map((m, j) => (
                           <div key={`marking ${i}-${j}`}>
                             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -597,13 +566,31 @@ const EditQuote = ({ history, match }) => {
                                 <DeleteFilled style={{ color: 'white', fontSize: '20px' }} />
                               </Button>
                             </div>
-                            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                              <Form.Item label="Cantidad" style={{ width: 100, marginRight: '15px' }} rules={[{ required: true }]}>
+                            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', width: 500 }}>
+                            <Form.Item label="Cantidad" style={{ width: 100, marginRight: '15px' }} rules={[{ required: true }]}>
                                 <Input
                                   name='amount'
                                   value={m.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                                   placeholder='Cantidad'
                                   style={{ width: 100 }}
+                                  onChange={(v) => onChangeHandlerMark(v, i, j)} />
+                              </Form.Item>
+                              <Form.Item label="Flete" style={{ width: 100, marginRight: '15px' }} rules={[{ required: true }]}>
+                                <Input
+                                  prefix='$'
+                                  name='freight'
+                                  value={m.freight.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                  placeholder='Flete'
+                                  style={{ width: 100 }}
+                                  onChange={(v) => onChangeHandlerMark(v, i, j)} />
+                              </Form.Item>
+                              <Form.Item label="Utilidad %" style={{ width: 100, marginRight: '15px' }} rules={[{ required: true }]}>
+                                <Input
+                                  suffix='%'
+                                  name='profit'
+                                  value={m.profit.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                  placeholder='Utilidad'
+                                  style={{ width: 70 }}
                                   onChange={(v) => onChangeHandlerMark(v, i, j)} />
                               </Form.Item>
                               <Form.Item label="Precio Neto" style={{ width: 100, marginRight: '15px' }} rules={[{ required: true }]}>

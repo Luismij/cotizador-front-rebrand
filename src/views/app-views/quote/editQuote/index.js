@@ -59,8 +59,9 @@ const EditQuote = ({ history, match }) => {
   const [markings, setMarkings] = useState([])
   const [stock, setStock] = useState([])
   const [isOpen, setIsOpen] = useState(false)
-  const [quote, setQuote] = useState({ customer: null, wayToPay: '', validityPeriod: '', deliveryTime: '', seller: '', generalObservations: '', products: [{ product: null, price: 0, typeOfPrice: 'net', priceDescription: '', markings: [{ freight: 0, profit: 0, netPrice: 0, amount: 0, markingPrice: 0, unitPrice: 0, totalPrice: 0, name: null, ink: null, i: null }], discount: false, observations: '' }] })
   const [discount, setDiscount] = useState(null)
+  const [usbDiscount, setUsbDiscount] = useState(null)
+  const [quote, setQuote] = useState({ customer: null, wayToPay: '', validityPeriod: '', deliveryTime: '', seller: '', generalObservations: '', products: [{ product: null, price: 0, typeOfPrice: 'net', priceDescription: '', markings: [{ freight: 0, profit: 0, netPrice: 0, amount: 0, markingPrice: 0, unitPrice: 0, totalPrice: 0, name: null, ink: null, i: null }], discount: false, usbDiscount: false, observations: '' }] })
 
   const quoteId = match.params.quoteid
 
@@ -142,6 +143,21 @@ const EditQuote = ({ history, match }) => {
       } catch (error) {
         console.error(error);
       }
+      // Get USB discounts
+      try {
+        const options = {
+          url: API_BASE_URL + '/usbdiscount/',
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'jwt-token': jwt
+          }
+        }
+        const res = (await axios.request(options)).data
+        setUsbDiscount(res)
+      } catch (error) {
+        console.error(error);
+      }
       setLoading(false)
     }
     init()
@@ -184,6 +200,20 @@ const EditQuote = ({ history, match }) => {
           break;
       }
 
+      if (product.usbDiscount && usbDiscount && usbDiscount.ranges.length > 0) {
+        let inRange = false
+        for (const range of usbDiscount.ranges) {
+          if (mark.amount * mark.netPrice >= range.min && mark.amount * mark.netPrice <= range.max) {
+            mark.netPrice = (mark.netPrice) * ((100 - range.discount) / 100)
+            inRange = true
+            break
+          } else if (mark.amount * mark.netPrice < range.min) inRange = true
+        }
+        if (!inRange) {
+          mark.netPrice = (product.price) * ((100 - usbDiscount.outOfRangeDiscount) / 100)
+        }
+      }
+
       let sum = 0
       if (mark.ink) {
         let inRange = false
@@ -218,7 +248,7 @@ const EditQuote = ({ history, match }) => {
 
   const addProduct = () => {
     let aux = { ...quote }
-    aux.products.push({ product: null, price: 0, typeOfPrice: 'net', priceDescription: '', freight: 0, profit: 0, markings: [{ freight: 0, profit: 0, netPrice: 0, amount: 0, markingPrice: 0, unitPrice: 0, totalPrice: 0, name: null, ink: null, i: null }], discount: false, observations: '' })
+    aux.products.push({ product: null, price: 0, typeOfPrice: 'net', priceDescription: '', freight: 0, profit: 0, markings: [{ freight: 0, profit: 0, netPrice: 0, amount: 0, markingPrice: 0, unitPrice: 0, totalPrice: 0, name: null, ink: null, i: null }], discount: false, usbDiscount: false, observations: '' })
     setQuote(aux)
   }
 
@@ -301,6 +331,13 @@ const EditQuote = ({ history, match }) => {
   const applyDiscount = (v, i) => {
     let aux = { ...quote }
     aux.products[i].discount = v.target.checked
+    aux.products[i] = calculatePrices(aux.products[i])
+    setQuote(aux)
+  }
+
+  const applyUsbDiscount = (v, i) => {
+    let aux = { ...quote }
+    aux.products[i].usbDiscount = v.target.checked
     aux.products[i] = calculatePrices(aux.products[i])
     setQuote(aux)
   }
@@ -517,7 +554,9 @@ const EditQuote = ({ history, match }) => {
                             Aplicar descuento
                           </Checkbox>
                         }
-
+                        <Checkbox checked={product.usbDiscount} onChange={(v) => applyUsbDiscount(v, i)}>
+                          Aplicar descuento USB
+                        </Checkbox>
                         <Form.Item label="Observaciones" style={{ width: 200, marginRight: '15px' }} rules={[{ required: true }]}>
                           <Input.TextArea style={{ minWidth: '220px' }} name='observations' value={product.observations} placeholder='Observaciones' onChange={(v) => onChangeObservations(i, v)} />
                         </Form.Item>
@@ -567,7 +606,7 @@ const EditQuote = ({ history, match }) => {
                               </Button>
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', width: 500 }}>
-                            <Form.Item label="Cantidad" style={{ width: 100, marginRight: '15px' }} rules={[{ required: true }]}>
+                              <Form.Item label="Cantidad" style={{ width: 100, marginRight: '15px' }} rules={[{ required: true }]}>
                                 <Input
                                   name='amount'
                                   value={m.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}

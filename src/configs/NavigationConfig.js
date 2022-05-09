@@ -5,7 +5,8 @@ import {
   BgColorsOutlined,
   PercentageOutlined,
   EditOutlined,
-  RocketOutlined
+  RocketOutlined,
+  UsbOutlined
 } from '@ant-design/icons';
 import { APP_PREFIX_PATH } from 'configs/AppConfig'
 
@@ -104,6 +105,29 @@ const navigationConfig = (user) => {
     ]
   }
 
+  const usbDiscountMenu =
+  {
+    key: `Descuentos USB`,
+    title: 'Descuentos USB',
+    icon: UsbOutlined,
+    submenu: [
+      {
+        key: `${APP_PREFIX_PATH}/usbdiscount`,
+        path: `${APP_PREFIX_PATH}/usbdiscount`,
+        title: 'Descuentos',
+        icon: UsbOutlined,
+        submenu: []
+      },
+      {
+        key: `${APP_PREFIX_PATH}/editusbdiscount`,
+        path: `${APP_PREFIX_PATH}/editusbdiscount`,
+        title: 'Editar Descuento',
+        icon: EditOutlined,
+        submenu: []
+      }
+    ]
+  }
+
   const productsMenu =
   {
     key: `${APP_PREFIX_PATH}/products`,
@@ -117,6 +141,7 @@ const navigationConfig = (user) => {
   menu.push(quoteMenu)
   menu.push(markingsMenu)
   menu.push(discountMenu)
+  menu.push(usbDiscountMenu)
   menu.push(productsMenu)
 
   return menu

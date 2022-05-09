@@ -550,11 +550,11 @@ const EditQuote = ({ history, match }) => {
                           </Select>
                         </Form.Item>
                         {product.typeOfPrice === 'full' &&
-                          <Checkbox checked={product.discount} onChange={(v) => applyDiscount(v, i)}>
+                          <Checkbox style={{ marginLeft: 10 }} checked={product.discount} onChange={(v) => applyDiscount(v, i)}>
                             Aplicar descuento
                           </Checkbox>
                         }
-                        <Checkbox checked={product.usbDiscount} onChange={(v) => applyUsbDiscount(v, i)}>
+                        <Checkbox style={{ marginLeft: 10 }} checked={product.usbDiscount} onChange={(v) => applyUsbDiscount(v, i)}>
                           Aplicar descuento USB
                         </Checkbox>
                         <Form.Item label="Observaciones" style={{ width: 200, marginRight: '15px' }} rules={[{ required: true }]}>

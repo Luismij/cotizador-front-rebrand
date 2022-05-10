@@ -17,29 +17,34 @@ const themes = {
   light: `${process.env.PUBLIC_URL}/css/light-theme.css`,
 };
 
+
 function App() {
   const [user, setUser] = useState('loading')
 
+  const updateUser = async () => {
+    const jwtToken = localStorage.getItem('jwt')
+    try {
+      if (jwtToken) {
+        const options = {
+          method: 'GET',
+          url: API_BASE_URL + "/user/loginjwt",
+          headers: { 'jwt-token': jwtToken }
+        }
+        const res = await axios.request(options)
+        setUser(res.data)
+      } else {
+        setUser(null)
+      }
+    } catch (error) {
+      setUser(null)
+      console.log(error);
+      localStorage.removeItem('jwt')
+    }
+  }
+
   useEffect(() => {
     const init = async () => {
-      const jwtToken = localStorage.getItem('jwt')
-      try {
-        if (jwtToken) {
-          const options = {
-            method: 'GET',
-            url: API_BASE_URL + "/user/loginjwt",
-            headers: { 'jwt-token': jwtToken }
-          }
-          const res = await axios.request(options)
-          setUser(res.data)
-        } else {
-          setUser(null)
-        }
-      } catch (error) {
-        setUser(null)
-        console.log(error);
-        localStorage.removeItem('jwt')
-      }
+      await updateUser()
     }
     init()
     /* return () => {
@@ -51,7 +56,7 @@ function App() {
     return (<Loading cover='content' />)
   }
   return (
-    <UserContext.Provider value={{ user, setUser }}>
+    <UserContext.Provider value={{ user, setUser, updateUser }}>
       <div className="App">
         <Provider store={store}>
           <ThemeSwitcherProvider themeMap={themes} defaultTheme={THEME_CONFIG.currentTheme} insertionPoint="styles-insertion-point">

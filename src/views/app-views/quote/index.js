@@ -38,12 +38,12 @@ const pdfGenerator = async (quote, user, setLoading) => {
   if (user.mainColor) doc.setTextColor(user.mainColor)
   else doc.setTextColor('#000b57')
   doc.text(120, 20, user.name)
-  doc.text(120, 35, user.businessName)
-  doc.text(120, 50, `Cel ${user.phone}`)
-  doc.text(120, 65, user.address)
-  doc.text(120, 80, user.webAddress)
+  if (user.businessName) doc.text(120, 35, user.businessName)
+  if (user.phone) doc.text(120, 50, `Cel ${user.phone}`)
+  if (user.address) doc.text(120, 65, user.address)
+  if (user.webAddress) doc.text(120, 80, user.webAddress)
   doc.text(120, 95, user.email)
-  doc.text(120, 110, `NIT ${user.nit}`)
+  if (user.nit) doc.text(120, 110, `NIT ${user.nit}`)
   //Customer and quote info
   doc.setFontSize(8)
   doc.rect(10, 130, 590, 65);

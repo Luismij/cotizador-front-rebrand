@@ -1,10 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState, useContext } from 'react'
 import { Form, Input, InputNumber, Upload, Button, Card, message } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 import { APP_PREFIX_PATH, API_BASE_URL } from 'configs/AppConfig'
 import axios from 'axios'
 import Loading from 'components/shared-components/Loading'
 import ColorPicker from 'components/shared-components/ColorPicker'
+import { UserContext } from 'contexts/UserContext';
 
 const layout = {
   labelCol: { span: 4 },
@@ -36,6 +37,7 @@ Object.filter = (obj, predicate) =>
     .reduce((res, key) => (res[key] = obj[key], res), {});
 
 const EditUser = ({ history, match }) => {
+  const { updateUser } = useContext(UserContext)
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const form = useRef(null)
@@ -67,7 +69,10 @@ const EditUser = ({ history, match }) => {
 
   const onFinish = async (form) => {
     setLoading(true)
-    let filterData = Object.filter(form, item => item !== undefined && item !== '')
+    let filterData = Object.filter(form, item => item !== undefined)
+    for (const key in filterData) {
+      if (filterData[key] === null) filterData[key] = ''
+    }
     const jwt = localStorage.getItem('jwt')
     const data = new FormData()
     for (const key in filterData) {
@@ -89,6 +94,7 @@ const EditUser = ({ history, match }) => {
         }
       }
       await axios.request(options)
+      await updateUser()
       message.success({ content: 'Usuario editado con exito' })
       setLoading(false)
       history.push(APP_PREFIX_PATH + '/users')
@@ -115,7 +121,7 @@ const EditUser = ({ history, match }) => {
         <Form.Item name={['name']} label="Nombre" rules={[{ required: true }]}>
           <Input />
         </Form.Item>
-        <Form.Item name={['email']} label="Correo" rules={[{ type: 'email' }]}>
+        <Form.Item name={['email']} label="Correo" rules={[{ type: 'email', required: true }]}>
           <Input />
         </Form.Item>
         <Form.Item name={['logo']} label="Logo" valuePropName="logo" getValueFromEvent={uploadHandle} >
@@ -153,7 +159,7 @@ const EditUser = ({ history, match }) => {
           <ColorPicker colorChange={(v) => setForm(v, 'mainColor')} color={user.mainColor} />
         </Form.Item>
         <Form.Item name={['secondaryColor']} label="Color secundario" >
-          <ColorPicker colorChange={(v) => setForm(v, 'secondaryColor')} color={user.secondaryColor}/>
+          <ColorPicker colorChange={(v) => setForm(v, 'secondaryColor')} color={user.secondaryColor} />
         </Form.Item>
         <Form.Item wrapperCol={{ ...layout.wrapperCol, offset: 4 }}>
           <Button type="primary" htmlType="submit">

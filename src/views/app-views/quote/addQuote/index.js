@@ -166,22 +166,23 @@ const AddQuote = ({ history }) => {
           break;
         case 'full':
           mark.netPrice = product.price * 0.6
-          if (product.discount && discount && discount.ranges.length > 0) {
-            let inRange = false
-            for (const range of discount.ranges) {
-              if (mark.amount * mark.netPrice >= range.min && mark.amount * mark.netPrice <= range.max) {
-                mark.netPrice = (product.price * 0.6) * ((100 - range.discount) / 100)
-                inRange = true
-                break
-              } else if (mark.amount * mark.netPrice < range.min) inRange = true
-            }
-            if (!inRange) {
-              mark.netPrice = (product.price * 0.6) * ((100 - discount.outOfRangeDiscount) / 100)
-            }
-          }
           break;
         default:
           break;
+      }
+
+      if (product.discount && discount && discount.ranges.length > 0) {
+        let inRange = false
+        for (const range of discount.ranges) {
+          if (mark.amount * mark.netPrice >= range.min && mark.amount * mark.netPrice <= range.max) {
+            mark.netPrice = mark.netPrice * ((100 - range.discount) / 100)
+            inRange = true
+            break
+          } else if (mark.amount * mark.netPrice < range.min) inRange = true
+        }
+        if (!inRange) {
+          mark.netPrice = mark.netPrice * ((100 - discount.outOfRangeDiscount) / 100)
+        }
       }
 
       if (product.usbDiscount && usbDiscount && usbDiscount.ranges.length > 0) {
@@ -194,7 +195,7 @@ const AddQuote = ({ history }) => {
           } else if (mark.amount * mark.netPrice < range.min) inRange = true
         }
         if (!inRange) {
-          mark.netPrice = (product.price) * ((100 - usbDiscount.outOfRangeDiscount) / 100)
+          mark.netPrice = mark.netPrice * ((100 - usbDiscount.outOfRangeDiscount) / 100)
         }
       }
 
@@ -533,11 +534,9 @@ const AddQuote = ({ history }) => {
                             <Option value={'full'}>Normal / Full</Option>
                           </Select>
                         </Form.Item>
-                        {product.typeOfPrice === 'full' &&
-                          <Checkbox style={{ marginLeft: 10 }} checked={product.discount} onChange={(v) => applyDiscount(v, i)}>
-                            Aplicar descuento
-                          </Checkbox>
-                        }
+                        <Checkbox style={{ marginLeft: 10 }} checked={product.discount} onChange={(v) => applyDiscount(v, i)}>
+                          Aplicar descuento
+                        </Checkbox>
                         <Checkbox style={{ marginLeft: 10 }} checked={product.usbDiscount} onChange={(v) => applyUsbDiscount(v, i)}>
                           Aplicar descuento USB
                         </Checkbox>

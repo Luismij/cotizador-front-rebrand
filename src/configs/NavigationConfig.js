@@ -131,10 +131,24 @@ const navigationConfig = (user) => {
   const productsMenu =
   {
     key: `${APP_PREFIX_PATH}/products`,
-    path: `${APP_PREFIX_PATH}/products`,
     title: 'Productos',
     icon: RocketOutlined,
-    submenu: []
+    submenu: [
+      {
+        key: `${APP_PREFIX_PATH}/products`,
+        path: `${APP_PREFIX_PATH}/products`,
+        title: 'Productos',
+        icon: RocketOutlined,
+        submenu: []
+      },
+      {
+        key: `${APP_PREFIX_PATH}/addproduct`,
+        path: `${APP_PREFIX_PATH}/addproduct`,
+        title: 'Crear Producto',
+        icon: PlusOutlined,
+        submenu: []
+      }
+    ]
   }
 
   menu.push(customerMenu)

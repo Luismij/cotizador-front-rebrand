@@ -23,6 +23,23 @@ const toDataURL = url => fetch(url, { mode: 'cors' })
 
 const pdfGenerator = async (quote, user, setLoading) => {
   setLoading(true)
+  //GET CUSTOMER
+  let customer = quote.customer
+  try {
+    const jwt = localStorage.getItem('jwt')
+    const options = {
+      url: API_BASE_URL + '/customer/' + customer._id,
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'jwt-token': jwt
+      }
+    }
+    let res = await axios.request(options)
+    customer = res.data
+  } catch (error) {
+    console.log(error);
+  }
   let doc = new jsPDF('p', 'pt', 'letter')
   //HEADER
   try {
@@ -49,7 +66,7 @@ const pdfGenerator = async (quote, user, setLoading) => {
   doc.rect(10, 130, 590, 65);
   doc.setFont('Helvetica', 'bold')
   doc.text(15, 145, 'FECHA:')
-  doc.text(15, 160, 'EMPRESA:')
+  doc.text(15, 160, 'RAZON SOCIAL:')
   doc.text(15, 175, 'CONTACTO:')
   doc.text(15, 190, 'TELEFONO:')
   doc.text(220, 145, 'CIUDAD:')
@@ -64,14 +81,19 @@ const pdfGenerator = async (quote, user, setLoading) => {
   doc.text(425, 145, `COTIZACION No.${quote.quoteNumber}`)
   doc.setFont('Helvetica', 'normal')
   doc.setTextColor('#000')
-  doc.text(70, 145, (moment(quote.createdAt).format('MMMM DD [DEL AÑO] YYYY')).toUpperCase())
-  if (quote.customer.businessName) doc.text(70, 160, quote.customer.businessName.toUpperCase())
-  if (quote.customer.name) doc.text(70, 175, quote.customer.name.toUpperCase())
-  if (quote.customer.phone) doc.text(70, 190, quote.customer.phone.toString().toUpperCase())
-  if (quote.customer.address) doc.text(270, 145, quote.customer.address.toString().toUpperCase())
-  if (quote.customer.businessName) doc.text(270, 160, quote.customer.nit.toString().toUpperCase())
-  if (quote.customer.email) doc.text(270, 175, quote.customer.email.toString().toUpperCase())
+  console.log(quote.customer);
+  doc.text(80, 145, (moment(quote.createdAt).format('MMMM DD [DEL AÑO] YYYY')).toUpperCase())
+  if (customer.businessName) doc.text(80, 160, customer.businessName.toUpperCase())
+  if (customer.name) doc.text(80, 175, customer.name.toUpperCase())
+  if (customer.phone) doc.text(80, 190, customer.phone.toString().toUpperCase())
+  if (customer.address) doc.text(270, 145, customer.address.toString().toUpperCase())
+  if (customer.businessName) doc.text(270, 160, customer.nit.toString().toUpperCase())
+  if (customer.email.length > 28) doc.setFontSize(5.6)
+  if (customer.email) doc.text(270, 175, customer.email.toString().toUpperCase())
+  doc.setFontSize(8)
+  if (customer.seller.length > 28) doc.setFontSize(5.6)
   if (quote.seller) doc.text(270, 190, quote.seller.toString().toUpperCase())
+  doc.setFontSize(8)
   if (quote.deliveryTime) doc.text(545, 160, quote.deliveryTime.toString().toUpperCase())
   if (quote.validityPeriod) doc.text(545, 175, quote.validityPeriod.toString().toUpperCase())
   if (quote.wayToPay) doc.text(545, 190, quote.wayToPay.toString().toUpperCase())

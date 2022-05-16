@@ -15,6 +15,10 @@ const antdTableSorter = (a, b, key) => {
     b = b[key].toLowerCase();
     return a > b ? -1 : b > a ? 1 : 0;
   }
+
+  if (typeof a[key] === 'boolean' && typeof b[key] === 'boolean') {
+    return a ? true : false
+  }
   return
 }
 

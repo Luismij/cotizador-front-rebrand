@@ -484,7 +484,7 @@ const AddQuote = ({ history }) => {
                   <Card>
                     <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-around', flexWrap: 'wrap' }}>
                       <Card style={{ marginRight: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                        <img crossOrigin={null} src={`https://catalogospromocionales.com${product.product.photo}`} style={{ objectFit: 'contain', width: '200px' }} alt={product.product.name} />
+                        <img crossOrigin={null} src={product.product.photo && product.product.photo[0] === '/' ? `https://catalogospromocionales.com${product.product.photo}` : product.product.photo} style={{ objectFit: 'contain', width: '200px' }} alt={product.product.name} />
                       </Card>
                       <div style={{ width: '230px', display: 'flex', flexDirection: 'column' }}>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>

@@ -51,7 +51,10 @@ const AddCustomer = ({ history }) => {
   return (
     <Card>
       <Form {...layout} name="add-customer" onFinish={onFinish} validateMessages={validateMessages}>
-        <Form.Item name={['name']} label="Nombre" rules={[{ required: true }]}>
+        <Form.Item name={['businessName']} label="Razon social" rules={[{ required: true }]}>
+          <Input />
+        </Form.Item>
+        <Form.Item name={['name']} label="Contacto" >
           <Input />
         </Form.Item>
         <Form.Item name={['email']} label="Correo" rules={[{ type: 'email' }]}>
@@ -69,11 +72,8 @@ const AddCustomer = ({ history }) => {
         <Form.Item name={['address']} label="Ciudad" >
           <Input />
         </Form.Item>
-        <Form.Item name={['businessName']} label="Razon social" >
-          <Input />
-        </Form.Item>
         <Form.Item name={['nit']} label="NIT" >
-          <InputNumber style={{ width: '200px' }} />
+          <Input style={{ width: '200px' }} />
         </Form.Item>
         <Form.Item wrapperCol={{ ...layout.wrapperCol, offset: 4 }}>
           <Button type="primary" htmlType="submit">

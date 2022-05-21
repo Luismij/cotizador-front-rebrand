@@ -73,6 +73,12 @@ const Customers = ({ history }) => {
   }
   const columns = [
     {
+      title: 'Razon Social',
+      dataIndex: 'businessName',
+      key: 'businessName',
+      sorter: (a, b) => antdTableSorter(a, b, 'name'),
+    },
+    {
       title: 'Nombre',
       dataIndex: 'name',
       key: 'name',
@@ -100,7 +106,7 @@ const Customers = ({ history }) => {
 
   const search = (toSearch) => {
     if (toSearch.length > 0) {
-      setCustomers(searchTextInArray(allCustomers, ['name', 'email'], toSearch))
+      setCustomers(searchTextInArray(allCustomers, ['businessName', 'name', 'email'], toSearch))
     } else {
       setCustomers(allCustomers)
     }

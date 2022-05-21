@@ -411,7 +411,7 @@ const EditQuote = ({ history, match }) => {
       <Card>
         <Form onFinish={(form) => onFinish(form, setLoading, history)}>
           <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-            <Form.Item label='Cliente' name={['customer']} rules={[{ required: true }]} initialValue={customer}>
+            <Form.Item label='Razon social' name={['customer']} rules={[{ required: true }]} initialValue={customer}>
               <Select
                 showSearch
                 style={{ width: 200 }}
@@ -424,7 +424,7 @@ const EditQuote = ({ history, match }) => {
                 }
               >
                 {customers.map((p, i) => (
-                  <Option value={i} key={p._id}>{p.name}</Option>
+                  <Option value={i} key={p._id}>{p.businessName}</Option>
                 ))}
               </Select>
             </Form.Item>

@@ -86,7 +86,7 @@ const pdfGenerator = async (quote, user, setLoading) => {
   if (customer.name) doc.text(80, 175, customer.name.toUpperCase())
   if (customer.phone) doc.text(80, 190, customer.phone.toString().toUpperCase())
   if (customer.address) doc.text(270, 145, customer.address.toString().toUpperCase())
-  if (customer.businessName) doc.text(270, 160, customer.nit.toString().toUpperCase())
+  if (customer.nit) doc.text(270, 160, customer.nit.toString().toUpperCase())
   if (customer.email?.length > 28) doc.setFontSize(5.6)
   if (customer.email) doc.text(270, 175, customer.email.toString().toUpperCase())
   doc.setFontSize(8)
@@ -292,18 +292,18 @@ const Quotes = ({ history }) => {
       sorter: (a, b) => antdTableSorter(a, b, 'quoteNumber'),
     },
     {
+      title: 'Cliente',
+      dataIndex: 'customer',
+      key: 'customer',
+      render: (c) => <p>{c.businessName}</p>,
+      sorter: (a, b) => antdTableSorter(a, b, 'customer.businessName'),
+    },
+    {
       title: 'Fecha de creacion',
       dataIndex: 'createdAt',
       key: 'createdAt',
       render: (v) => <p>{moment(v).format('MMMM DD YYYY')}</p>,
       sorter: (a, b) => antdTableSorter(a, b, 'createdAt'),
-    },
-    {
-      title: 'Cliente',
-      dataIndex: 'customer',
-      key: 'customer',
-      render: (c) => <p>{c.name}</p>,
-      sorter: (a, b) => antdTableSorter(a, b, 'customer.name'),
     },
     {
       title: 'Vendedor',

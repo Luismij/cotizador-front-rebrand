@@ -395,7 +395,7 @@ const AddQuote = ({ history }) => {
       <Card>
         <Form onFinish={(form) => onFinish(form, setLoading, history)}>
           <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-            <Form.Item label='Cliente' name={['customer']} rules={[{ required: true }]}>
+            <Form.Item label='Razon social' name={['customer']} rules={[{ required: true }]}>
               <Select
                 showSearch
                 style={{ width: 200 }}
@@ -408,7 +408,7 @@ const AddQuote = ({ history }) => {
                 }
               >
                 {customers.map((p, i) => (
-                  <Option value={i} key={p._id}>{p.name}</Option>
+                  <Option value={i} key={p._id}>{p.businessName}</Option>
                 ))}
               </Select>
             </Form.Item>

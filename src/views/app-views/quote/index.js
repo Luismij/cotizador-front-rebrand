@@ -142,7 +142,7 @@ const pdfGenerator = async (quote, user, setLoading) => {
     doc.setFont('Helvetica', 'normal')
     let height3 = height + 20
     if (item.product?.description) {
-      let aux = item.product.description.replace(/&aacute;/gi, 'á') + "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. "
+      let aux = item.product.description.replace(/&aacute;/gi, 'á')
       aux = aux.replace(/&eacute;/gi, 'é')
       aux = aux.replace(/&iacute;/gi, 'í')
       aux = aux.replace(/&oacute;/gi, 'ó')

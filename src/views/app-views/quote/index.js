@@ -113,39 +113,57 @@ const pdfGenerator = async (quote, user, setLoading) => {
   doc.setTextColor('#000')
   let height = 220
   for (const item of quote.products) {
-    if (height > 650) {
+    if (height > 550) {
       doc.addPage()
       height = 15
     }
-    doc.rect(10, height, 190, 150)
-    doc.rect(200, height, 200, 150)
-    doc.rect(400, height, 200, 150)
     try {
       const logo = await toDataURL(`https://catalogospromocionales.com${item.product.photo}`)//`https://catalogospromocionales.com${item.product.photo}`
       doc.addImage(logo, 'jpeg', 45, height + 15, 120, 120);
     } catch { }
     doc.setFont('Helvetica', 'bold')
-    if (item.product.name) doc.text(220, height + 10, item.product.name.toString())
-    if (item.product.sku) doc.text(220, height + 20, item.product.sku.toString())
+    let height2 = height + 10
+    if (item.product.name) {
+      let des = item.product.name
+      while (des.length > 45) {
+        let j = 0
+        while (des[45 - j] !== ' ' && j < 45) {
+          j++
+        }
+        height2 += 10
+        doc.text(220, height2, des.slice(0, 45 - j))
+        des = des.replace(des.slice(0, 45 - j + 1), '')
+      }
+      height2 += 10
+      doc.text(220, height2, des)
+    }
+    height2 += 10
+    if (item.product.sku) doc.text(220, height2, item.product.sku.toString())
     doc.setFont('Helvetica', 'normal')
+    let height3 = height + 20
     if (item.product?.description) {
-      let aux = item.product.description.replace(/&aacute;/gi, 'á')
+      let aux = item.product.description.replace(/&aacute;/gi, 'á') + "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. "
       aux = aux.replace(/&eacute;/gi, 'é')
       aux = aux.replace(/&iacute;/gi, 'í')
       aux = aux.replace(/&oacute;/gi, 'ó')
       aux = aux.replace(/&uacute;/gi, 'ú')
       aux = aux.replace(/&ntilde;/gi, 'ñ')
+      aux = aux.replace(/(<a)([\s\S]*?)(<\/a>)/gi, '')
       aux = aux.replace(/&nbsp;/gi, '')
       aux = aux.replace(/<span[\s\S]*?>|<\/span>/gi, '')
 
       aux = aux.split('<br />\r\n')
-      let height2 = height + 20
+      height2 += 20
       for (let i = 0; i < aux.length; i++) {
         let des = aux[i];
         while (des.length > 45) {
+          let j = 0
+          while (des[45 - j] !== ' ' && j < 45) {
+            j++
+          }
           height2 += 10
-          doc.text(220, height2, des.slice(0, 45))
-          des = des.replace(des.slice(0, 45), '')
+          doc.text(220, height2, des.slice(0, 45 - j))
+          des = des.replace(des.slice(0, 45 - j + 1), '')
         }
         height2 += 10
         doc.text(220, height2, des)
@@ -156,15 +174,22 @@ const pdfGenerator = async (quote, user, setLoading) => {
       aux = aux.split('\n')
       for (let i = 0; i < aux.length; i++) {
         let des = aux[i]
-        while (des.length > 45 && (height2 - height) <= 140) {
+        while (des.length > 45) {
           height2 += 10
-          doc.text(220, height2, des.slice(0, 45))
-          des = des.replace(des.slice(0, 45), '')
+          let j = 0
+          while (des[45 - j] !== ' ' && j < 45) {
+            j++
+          }
+          doc.text(220, height2, des.slice(0, 45 - j))
+          des = des.replace(des.slice(0, 45 - j), '')
         }
         if ((height2 - height) <= 140) {
           height2 += 10
           doc.text(220, height2, des)
         }
+      }
+      if (height2 - height > 150) {
+        height3 = height2
       }
     }
     doc.setTextColor('#000000')
@@ -188,10 +213,22 @@ const pdfGenerator = async (quote, user, setLoading) => {
         if (mark.totalPrice !== null) doc.text(595, height2 + 8, `$ ${parseInt(mark.totalPrice).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`, 'right')
         else doc.text(595, height2 + 8, `$ 0`, 'right')
         height2 += 10
-
+      }
+      if (height2 - height > 150) {
+        height3 = height2
       }
     }
-    height += 150
+    if (height3 - height > 150) {
+      doc.rect(10, height, 190, height3 - height + 10)
+      doc.rect(200, height, 200, height3 - height + 10)
+      doc.rect(400, height, 200, height3 - height + 10)
+      height += height3 - height + 10
+    } else {
+      doc.rect(10, height, 190, 150)
+      doc.rect(200, height, 200, 150)
+      doc.rect(400, height, 200, 150)
+      height += 150
+    }
   }
   height += 15
   if (user.secondaryColor) doc.setTextColor(user.secondaryColor)

@@ -118,7 +118,7 @@ const pdfGenerator = async (quote, user, setLoading) => {
       height = 15
     }
     try {
-      const logo = await toDataURL(`https://catalogospromocionales.com${item.product.photo}`)//`https://catalogospromocionales.com${item.product.photo}`
+      const logo = await toDataURL(`https://catalogospromocionales.com${item.product.photo}`)
       doc.addImage(logo, 'jpeg', 45, height + 15, 120, 120);
     } catch { }
     doc.setFont('Helvetica', 'bold')
@@ -151,6 +151,7 @@ const pdfGenerator = async (quote, user, setLoading) => {
       aux = aux.replace(/(<a)([\s\S]*?)(<\/a>)/gi, '')
       aux = aux.replace(/&nbsp;/gi, '')
       aux = aux.replace(/<span[\s\S]*?>|<\/span>/gi, '')
+      aux = aux.replace(/<strong>|<\/strong>/gi, '')
 
       aux = aux.split('<br />\r\n')
       height2 += 20
@@ -183,10 +184,8 @@ const pdfGenerator = async (quote, user, setLoading) => {
           doc.text(220, height2, des.slice(0, 45 - j))
           des = des.replace(des.slice(0, 45 - j), '')
         }
-        if ((height2 - height) <= 140) {
-          height2 += 10
-          doc.text(220, height2, des)
-        }
+        height2 += 10
+        doc.text(220, height2, des)
       }
       if (height2 - height > 150) {
         height3 = height2
@@ -237,11 +236,23 @@ const pdfGenerator = async (quote, user, setLoading) => {
   let aux = quote.generalObservations
   aux = aux.split('\n')
   for (let i = 0; i < aux.length; i++) {
-    let des = aux[i];
-    while (des.length > 131) {
+    let des = aux[i]
+    while (des.length > 125) {
       height += 10
-      doc.text(10, height, des.slice(0, 131))
-      des = des.replace(des.slice(0, 131), '')
+      let j = 0
+      while (des[125 - j] !== ' ' && j < 125) {
+        j++
+      }
+      doc.text(10, height, des.slice(0, 125 - j))
+      des = des.replace(des.slice(0, 125 - j), '')
+      if (height >= 780) {
+        doc.addPage()
+        height = 10
+      }
+    }
+    if (height >= 780) {
+      doc.addPage()
+      height = 10
     }
     height += 10
     doc.text(10, height, des)

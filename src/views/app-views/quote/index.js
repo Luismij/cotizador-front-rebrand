@@ -40,7 +40,7 @@ const pdfGenerator = async (quote, user, setLoading) => {
   } catch (error) {
     console.log(error);
   }
-  let doc = new jsPDF('p', 'pt', 'letter')
+  let doc = new jsPDF('p', 'pt', 'letter', true)
   //HEADER
   try {
     const logo = await toDataURL(`${API_BASE_URL}/image/${user.logo}`)

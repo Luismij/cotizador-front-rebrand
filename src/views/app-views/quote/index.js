@@ -120,7 +120,7 @@ const pdfGenerator = async (quote, user, setLoading) => {
       height = 15
     }
     try {
-      const logo = await toDataURL(`https://catalogospromocionales.com${item.product.photo}`)
+      const logo = await toDataURL(`${item.product.photo[0] === '/' ? 'https://catalogospromocionales.com' + item.product.photo : item.product.photo}`)
       doc.addImage(logo, 'jpeg', 45, height + 15, 120, 120);
     } catch { }
     doc.setFont('Helvetica', 'bold')

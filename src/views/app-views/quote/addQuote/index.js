@@ -107,8 +107,12 @@ const AddQuote = ({ history }) => {
             'jwt-token': jwt
           }
         }
-        const res = await axios.request(options)
-        setMarkings(res.data)
+        let res = (await axios.request(options)).data
+        res = res.sort((a, b) => {
+          if (a.name < b.name) return -1
+          else return 1
+        })
+        setMarkings(res)
       } catch (error) {
         console.error(error);
       }

@@ -44,11 +44,11 @@ const pdfGenerator = async (quote, user, setLoading) => {
   //HEADER
   try {
     const logo = await toDataURL(`${API_BASE_URL}/image/${user.logo}`)
-    doc.addImage(logo, 'jpeg', 10, 10, 100, 100);
+    doc.addImage(logo, 'jpeg', 10, 10, 100, 100, undefined,'FAST');
   } catch { }
   try {
     const logo2 = await toDataURL(`${API_BASE_URL}/image/${user.logo2}`)
-    doc.addImage(logo2, 'jpeg', 250, 10, 350, 100);//7:2
+    doc.addImage(logo2, 'jpeg', 250, 10, 350, 100, undefined,'FAST');//7:2
   } catch { }
   doc.setFont('Helvetica')
   doc.setFontSize(10)
@@ -122,7 +122,7 @@ const pdfGenerator = async (quote, user, setLoading) => {
     doc.rect(400, height, 200, 150)
     try {
       const logo = await toDataURL(`https://catalogospromocionales.com${item.product.photo}`)//`https://catalogospromocionales.com${item.product.photo}`
-      doc.addImage(logo, 'jpeg', 45, height + 15, 120, 120);
+      doc.addImage(logo, 'jpeg', 45, height + 15, 120, 120, undefined,'FAST');
     } catch { }
     doc.setFont('Helvetica', 'bold')
     if (item.product.name) doc.text(220, height + 10, item.product.name.toString())

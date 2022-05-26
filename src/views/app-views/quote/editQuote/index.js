@@ -123,8 +123,12 @@ const EditQuote = ({ history, match }) => {
             'jwt-token': jwt
           }
         }
-        const res = await axios.request(options)
-        setMarkings(res.data)
+        let res = (await axios.request(options)).data
+        res = res.sort((a, b) => {
+          if (a.name < b.name) return -1
+          else return 1
+        })
+        setMarkings(res)
       } catch (error) {
         console.error(error);
       }
@@ -571,7 +575,7 @@ const EditQuote = ({ history, match }) => {
                                   placeholder="Selecciona una marcación"
                                   onChange={(k) => onChangeMarking(i, j, k)}
                                   optionFilterProp="children"
-                                  value={markings.findIndex(item => item.name === m.name) === m.i ? m.i : null}
+                                  value={markings.findIndex(item => item.name === m.name)}
                                   filterOption={(input, option) =>
                                     option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                                   }

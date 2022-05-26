@@ -74,7 +74,7 @@ const EditProduct = ({ history, match }) => {
         }
       }
       await axios.request(options)
-      message.success({ content: 'Cliente editado con exito' })
+      message.success({ content: 'Producto editado con exito' })
       setLoading(false)
       history.push(APP_PREFIX_PATH + '/products')
     } catch (error) {

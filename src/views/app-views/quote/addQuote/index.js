@@ -407,9 +407,6 @@ const AddQuote = ({ history }) => {
                 optionFilterProp="children"
                 value={customer}
                 onChange={onChangeCustomer}
-                filterOption={(input, option) =>
-                  option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                }
               >
                 {customers.map((p, i) => (
                   <Option value={i} key={p._id}>{p.businessName} - {p.name}</Option>

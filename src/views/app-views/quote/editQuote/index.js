@@ -423,6 +423,7 @@ const EditQuote = ({ history, match }) => {
                 optionFilterProp="children"
                 value={customer}
                 onChange={onChangeCustomer}
+              >
                 {customers.map((p, i) => (
                   <Option value={i} key={p._id}>{p.businessName} - {p.name}</Option>
                 ))}

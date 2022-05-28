@@ -412,7 +412,7 @@ const AddQuote = ({ history }) => {
                 }
               >
                 {customers.map((p, i) => (
-                  <Option value={i} key={p._id}>{p.businessName}</Option>
+                  <Option value={i} key={p._id}>{p.businessName} - {p.name}</Option>
                 ))}
               </Select>
             </Form.Item>

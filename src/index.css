@@ -19,3 +19,7 @@
 .loading .ant-spin {
   color: #3e79f7;
 }
+
+.ant-select-dropdown.ant-select-dropdown-placement-bottomLeft {
+  min-width: 500px !important;
+}

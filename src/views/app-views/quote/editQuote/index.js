@@ -295,7 +295,7 @@ const EditQuote = ({ history, match }) => {
     aux.products[i].markings[j].name = markings[k].name
     aux.products[i].markings[j].i = k
     aux.products[i].markings[j].ink = null
-    //aux.products[i] = calculatePrices(aux.products[i])
+    aux.products[i] = calculatePrices(aux.products[i])
     setQuote(aux)
   }
 
@@ -582,29 +582,29 @@ const EditQuote = ({ history, match }) => {
                                   ))}
                                 </Select>
                               </Form.Item>
-                              {m?.name && markings[m.i]?.inks?.length > 0 &&
-                                <Form.Item label='Tintas' style={{ marginBottom: '0px' }} rules={[{ required: true }]} initialValue={markings[m.i].inks.findIndex(item => item?._id === m.ink?._id) >= 0 ? markings[m.i].inks.indexOf(m.ink) : null}>
-                                  <Select
-                                    showSearch
-                                    style={{ width: 160 }}
-                                    placeholder="Tintas"
-                                    value={markings[m.i].inks.findIndex(item => item?._id === m.ink?._id) >= 0 ? markings[m.i].inks.findIndex(item => item._id === m.ink._id) : null}
-                                    onChange={(k) => onChangeInk(i, j, k)}
-                                    optionFilterProp="children"
-                                    filterOption={(input, option) =>
-                                      option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                                    }
-                                  >
-                                    {markings[m.i]?.inks?.map((ink, k) => (
-                                      <Option value={k} key={`ink ${i - j - k}`}>{ink.name}</Option>
-                                    ))}
-                                  </Select>
-                                </Form.Item>
-                              }
                               <Button style={{ backgroundColor: '#ff7575' }} onClick={() => deleteMarking(i, j)}>
                                 <DeleteFilled style={{ color: 'white', fontSize: '20px' }} />
                               </Button>
                             </div>
+                            {m?.name && markings[m.i]?.inks?.length > 0 &&
+                              <Form.Item label='Tintas' style={{ marginBottom: '0px', marginTop: 10 }} rules={[{ required: true }]} initialValue={markings[m.i].inks.findIndex(item => item?._id === m.ink?._id) >= 0 ? markings[m.i].inks.indexOf(m.ink) : null}>
+                                <Select
+                                  showSearch
+                                  style={{ width: 160 }}
+                                  placeholder="Tintas"
+                                  value={markings[m.i].inks.findIndex(item => item?._id === m.ink?._id) >= 0 ? markings[m.i].inks.findIndex(item => item._id === m.ink._id) : null}
+                                  onChange={(k) => onChangeInk(i, j, k)}
+                                  optionFilterProp="children"
+                                  filterOption={(input, option) =>
+                                    option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                  }
+                                >
+                                  {markings[m.i]?.inks?.map((ink, k) => (
+                                    <Option value={k} key={`ink ${i - j - k}`}>{ink.name}</Option>
+                                  ))}
+                                </Select>
+                              </Form.Item>
+                            }
                             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', width: 500 }}>
                               <Form.Item label="Cantidad" style={{ width: 100, marginRight: '15px' }} rules={[{ required: true }]}>
                                 <Input

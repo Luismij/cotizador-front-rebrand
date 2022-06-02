@@ -295,7 +295,7 @@ const EditQuote = ({ history, match }) => {
     aux.products[i].markings[j].name = markings[k].name
     aux.products[i].markings[j].i = k
     aux.products[i].markings[j].ink = null
-    aux.products[i] = calculatePrices(aux.products[i])
+    //aux.products[i] = calculatePrices(aux.products[i])
     setQuote(aux)
   }
 

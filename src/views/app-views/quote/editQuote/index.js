@@ -562,7 +562,7 @@ const EditQuote = ({ history, match }) => {
                         </Form.Item>
                       </div>
                       <div style={{ minWidth: '550px', display: 'flex', flexDirection: 'column' }}>
-                        {product.markings.map((m, j) => (
+                        {product?.markings?.map((m, j) => (
                           <div key={`marking ${i}-${j}`}>
                             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                               <Form.Item label='Marcacion' style={{ marginBottom: '0px' }} rules={[{ required: true }]} initialValue={markings.findIndex(item => item.name === m.name) === m.i ? m.i : null}>
@@ -577,12 +577,12 @@ const EditQuote = ({ history, match }) => {
                                     option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                                   }
                                 >
-                                  {markings.map((p, k) => (
+                                  {markings?.map((p, k) => (
                                     <Option value={k} key={`${i}-${j}-${p._id}`}>{p.name}</Option>
                                   ))}
                                 </Select>
                               </Form.Item>
-                              {m.name && markings[m.i].inks.length > 0 &&
+                              {m?.name && markings[m.i]?.inks?.length > 0 &&
                                 <Form.Item label='Tintas' style={{ marginBottom: '0px' }} rules={[{ required: true }]} initialValue={markings[m.i].inks.findIndex(item => item?._id === m.ink?._id) >= 0 ? markings[m.i].inks.indexOf(m.ink) : null}>
                                   <Select
                                     showSearch
@@ -595,7 +595,7 @@ const EditQuote = ({ history, match }) => {
                                       option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                                     }
                                   >
-                                    {markings[m.i].inks.map((ink, k) => (
+                                    {markings[m.i]?.inks?.map((ink, k) => (
                                       <Option value={k} key={`ink ${i - j - k}`}>{ink.name}</Option>
                                     ))}
                                   </Select>

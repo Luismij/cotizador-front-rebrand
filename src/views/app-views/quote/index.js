@@ -86,7 +86,7 @@ const pdfGenerator = async (quote, user, setLoading) => {
   if (customer.name) doc.text(80, 175, customer.name.toUpperCase())
   if (customer.phone) doc.text(80, 190, customer.phone.toString().toUpperCase())
   if (customer.address) doc.text(250, 145, customer.address.toString().toUpperCase())
-  if (customer.nit) doc.text(330, 145, customer.nit.toString().toUpperCase())
+  if (customer.nit) doc.text(350, 145, customer.nit.toString().toUpperCase())
   if (customer.email?.length > 28) doc.setFontSize(5.6)
   if (customer.email) doc.text(270, 175, customer.email.toString().toUpperCase())
   doc.setFontSize(8)

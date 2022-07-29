@@ -44,11 +44,11 @@ const pdfGenerator = async (quote, user, setLoading) => {
   //HEADER
   try {
     const logo = await toDataURL(`${API_BASE_URL}/image/${user.logo}`)
-    doc.addImage(logo, 'jpeg', 10, 10, 100, 100, undefined,'FAST');
+    doc.addImage(logo, 'jpeg', 10, 10, 100, 100, undefined, 'FAST');
   } catch { }
   try {
     const logo2 = await toDataURL(`${API_BASE_URL}/image/${user.logo2}`)
-    doc.addImage(logo2, 'jpeg', 250, 10, 350, 100, undefined,'FAST');//7:2
+    doc.addImage(logo2, 'jpeg', 250, 10, 350, 100, undefined, 'FAST');//7:2
   } catch { }
   doc.setFont('Helvetica')
   doc.setFontSize(10)
@@ -121,7 +121,7 @@ const pdfGenerator = async (quote, user, setLoading) => {
     }
     try {
       const logo = await toDataURL(`${item.product.photo[0] === '/' ? 'https://catalogospromocionales.com' + item.product.photo : item.product.photo}`)
-      doc.addImage(logo, 'jpeg', 45, height + 15, 120, 120, undefined,'FAST');
+      doc.addImage(logo, 'jpeg', 45, height + 15, 120, 120, undefined, 'FAST');
     } catch { }
     doc.setFont('Helvetica', 'bold')
     let height2 = height + 10
@@ -154,19 +154,23 @@ const pdfGenerator = async (quote, user, setLoading) => {
       aux = aux.replace(/&nbsp;/gi, '')
       aux = aux.replace(/<span[\s\S]*?>|<\/span>/gi, '')
       aux = aux.replace(/<strong>|<\/strong>/gi, '')
-
       aux = aux.split('<br />\r\n')
+      let aux2 = []
+      for (const text of aux) {
+        aux2 = aux2.concat(text.split('\n'))
+      }
+      aux = aux2
       height2 += 20
       for (let i = 0; i < aux.length; i++) {
         let des = aux[i];
-        while (des.length > 45) {
+        while (des.length > 40) {
           let j = 0
-          while (des[45 - j] !== ' ' && j < 45) {
+          while (des[40 - j] !== ' ' && j < 40) {
             j++
           }
           height2 += 10
-          doc.text(220, height2, des.slice(0, 45 - j))
-          des = des.replace(des.slice(0, 45 - j + 1), '')
+          doc.text(220, height2, des.slice(0, 40 - j))
+          des = des.replace(des.slice(0, 40 - j + 1), '')
         }
         height2 += 10
         doc.text(220, height2, des)

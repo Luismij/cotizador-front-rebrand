@@ -208,11 +208,11 @@ const EditQuote = ({ history, match }) => {
       if (product.usbDiscount && usbDiscount && usbDiscount.ranges.length > 0) {
         let inRange = false
         for (const range of usbDiscount.ranges) {
-          if (mark.amount * mark.netPrice >= range.min && mark.amount * mark.netPrice <= range.max) {
+          if (mark.amount >= range.min && mark.amount <= range.max) {
             mark.netPrice = (mark.netPrice) * ((100 - range.discount) / 100)
             inRange = true
             break
-          } else if (mark.amount * mark.netPrice < range.min) inRange = true
+          } else if (mark.amount < range.min) inRange = true
         }
         if (!inRange) {
           mark.netPrice = (mark.netPrice) * ((100 - usbDiscount.outOfRangeDiscount) / 100)
